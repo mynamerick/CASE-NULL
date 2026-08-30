@@ -8,6 +8,7 @@ import { useGame } from "@/game/store";
 import { EvidenceDetail } from "@/components/evidence/EvidenceDetail";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/components/os/useIsMobile";
+import { useBackGuard } from "@/components/os/BackNavigation";
 import { withGroupBreaks } from "@/lib/grouping";
 import { cn } from "@/lib/utils";
 
@@ -57,6 +58,8 @@ export function SplitView({
   // Selection is derived, not stored: if the id falls out of the list (an
   // unlock, a filter, a reset) the detail pane simply has nothing to show.
   const selected = filtered.find((i) => i.id === selectedId) ?? null;
+
+  useBackGuard(isMobile && selected !== null, () => setSelectedId(null));
 
   const open = (item: EvidenceItem) => {
     setSelectedId(item.id);

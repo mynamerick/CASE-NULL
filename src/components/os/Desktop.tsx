@@ -13,6 +13,7 @@ import { MenuBar } from "./MenuBar";
 import { MobileLauncher } from "./MobileLauncher";
 import { NotificationToasts } from "./NotificationToasts";
 import { NoiseOverlay } from "./NoiseOverlay";
+import { BackNavigationProvider } from "./BackNavigation";
 import { useIsMobile } from "./useIsMobile";
 import { renderApp } from "@/components/apps/renderApp";
 
@@ -26,6 +27,7 @@ export function Desktop() {
   const unreviewed = (id: AppId) => unreviewedInApp(id, visible, discovered);
 
   return (
+    <BackNavigationProvider>
     <div className="relative h-dvh w-full overflow-hidden wallpaper">
       <div aria-hidden className="wallpaper-grid pointer-events-none absolute inset-0" />
       <MenuBar />
@@ -87,5 +89,6 @@ export function Desktop() {
       <NotificationToasts />
       <NoiseOverlay />
     </div>
+    </BackNavigationProvider>
   );
 }

@@ -7,6 +7,7 @@ import { useGame, visibleInApp } from "@/game/store";
 import type { EvidenceItem } from "@/game/types";
 import { EvidenceDetail } from "@/components/evidence/EvidenceDetail";
 import { PhotoScene } from "@/components/photo/PhotoScene";
+import { useBackGuard } from "@/components/os/BackNavigation";
 import { sortByTime, machineStamp, dayHeading, dayKey } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,8 @@ export function PhotosApp() {
 
   // Derived, not stored — an id that leaves the roll just resolves to null.
   const selected = items.find((i) => i.id === selectedId) ?? null;
+
+  useBackGuard(selected !== null, () => setSelectedId(null));
 
   const groups: { day: string; items: EvidenceItem[] }[] = [];
   for (const item of items) {

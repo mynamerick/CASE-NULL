@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Minus, Square, X, ChevronLeft } from "lucide-react";
 import { useGame, type WindowState } from "@/game/store";
 import { appById, TONE_CLASS } from "./apps";
+import { useBackGuard } from "./BackNavigation";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -65,6 +66,10 @@ export function AppWindow({ win, isMobile, children }: Props) {
       window.removeEventListener("pointercancel", onUp);
     };
   }, [dragging, moveWindow, win.appId, win.w]);
+
+  // On a phone an open panel is a navigation level, so back closes it
+  // rather than leaving the site.
+  useBackGuard(isMobile && !win.minimised, () => closeApp(win.appId));
 
   if (win.minimised) return null;
 

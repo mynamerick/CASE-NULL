@@ -405,6 +405,90 @@ async function mobileRun(browser: Browser) {
   await ctx.close();
 }
 
+
+/* ------------------------------------------------- phone back navigation */
+
+async function backNavigationRun(browser: Browser) {
+  console.log("\nPHONE BACK BUTTON — 390×844\n");
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
+  const page = await ctx.newPage();
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+
+  // Land on a real previous page first, so "leaving the game" is observable.
+  await page.goto("about:blank");
+  await boot(page);
+
+  const onLauncher = () => page.locator("[data-app-icon]").first().isVisible();
+
+  /* one level: app panel ------------------------------------------------- */
+  await openApp(page, "casefile");
+  await page.goBack();
+  await page.waitForTimeout(400);
+  check(
+    "back closes an open app and returns to the launcher",
+    await onLauncher(),
+  );
+  check(
+    "back did not leave the game",
+    page.url() !== "about:blank",
+    page.url(),
+  );
+
+  /* two levels: app panel + evidence detail -------------------------------- */
+  await openApp(page, "mail");
+  await page.locator('[data-app-window="mail"] [data-evidence-row]').first().click();
+  await page.waitForTimeout(350);
+  check("mail detail is open", await page.getByTestId("evidence-detail").isVisible());
+
+  await page.goBack();
+  await page.waitForTimeout(400);
+  check(
+    "back closes the detail but stays inside Mail",
+    !(await page.getByTestId("evidence-detail").isVisible().catch(() => false)) &&
+      (await page.locator('[data-app-window="mail"]').isVisible()),
+  );
+
+  await page.goBack();
+  await page.waitForTimeout(400);
+  check("back again returns to the launcher", await onLauncher());
+
+  /* the boundary: back from the launcher should actually leave -------------- */
+  await page.goBack();
+  await page.waitForTimeout(500);
+  check(
+    "back from the launcher leaves the game",
+    page.url() === "about:blank",
+    page.url(),
+  );
+
+  /* in-app dismissal must not strand a dead history entry ------------------ */
+  await page.goForward();
+  await page.waitForTimeout(600);
+  await page.waitForSelector("[data-app-icon]", { timeout: 15_000 });
+  await openApp(page, "notes");
+  await page
+    .locator('[data-app-window="notes"]')
+    .getByRole("button", { name: "Home" })
+    .click();
+  await page.waitForTimeout(400);
+  check("in-app Home returns to the launcher", await onLauncher());
+  await page.goBack();
+  await page.waitForTimeout(500);
+  check(
+    "after closing in-app, one back press leaves the game (no stale entry)",
+    page.url() === "about:blank",
+    page.url(),
+  );
+
+  check("no uncaught errors during back navigation", errors.length === 0, errors.slice(0, 3).join(" | "));
+  await ctx.close();
+}
+
 /* --------------------------------------------------------------------- run */
 
 (async () => {
@@ -415,6 +499,7 @@ async function mobileRun(browser: Browser) {
   try {
     await desktopRun(browser);
     await mobileRun(browser);
+    await backNavigationRun(browser);
   } finally {
     await browser.close();
   }
