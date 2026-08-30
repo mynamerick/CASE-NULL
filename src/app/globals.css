@@ -1,0 +1,279 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   HOLLOWAY FORENSIC WORKSTATION — design tokens
+   Muted charcoal / dark navy. Off-white text. Restrained amber + red status.
+   Deliberately NOT cyberpunk: no neon, no glassmorphism, no saturated hues.
+--------------------------------------------------------------------------- */
+
+/* The menu bar is taller on touch so its controls can be a real tap target.
+   Every layout offset reads this variable rather than hard-coding a number. */
+:root {
+  --menubar-h: 38px;
+}
+@media (min-width: 768px) {
+  :root {
+    --menubar-h: 30px;
+  }
+}
+
+@theme {
+  /* Surfaces — cool charcoal drifting toward navy in the deepest layers */
+  --color-void: #07090d;
+  --color-abyss: #0a0d13;
+  --color-shell: #10141c;
+  --color-panel: #161b25;
+  --color-raised: #1c222e;
+  --color-hover: #232a38;
+  --color-line: #262d3b;
+  --color-line-soft: #1e2431;
+
+  /* Text */
+  --color-ink: #e7e9ee;
+  --color-ink-dim: #a5adbd;
+  --color-ink-faint: #6f7889;
+  --color-ink-ghost: #4a5364;
+
+  /* Status — used sparingly, never decoratively */
+  --color-amber: #d99a2b;
+  --color-amber-dim: #8a6420;
+  --color-signal: #b8452f;
+  --color-signal-dim: #6d2a1d;
+  --color-verified: #4d8a72;
+  --color-cool: #5b7ea8;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-mono-stack), ui-monospace, "SF Mono", "Cascadia Mono",
+    Menlo, Consolas, monospace;
+
+  --radius-window: 6px;
+}
+
+/* ------------------------------------------------------------------ base -- */
+
+* {
+  border-color: var(--color-line-soft);
+}
+
+html,
+body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv02", "cv03", "cv04";
+}
+
+/* Stop iOS from zooming when focusing inputs inside the "OS". */
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+@media (min-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: inherit;
+  }
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-amber) 30%, transparent);
+  color: var(--color-ink);
+}
+
+/* ---------------------------------------------------------------- scrollbar */
+
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  background: #333c4d;
+  background-clip: content-box;
+}
+
+/* ------------------------------------------------------------------ layers */
+
+/* Wallpaper: layered radial pools + a faint surveyor's grid. No imagery. */
+.wallpaper {
+  background-color: #070910;
+  background-image:
+    radial-gradient(
+      ellipse 90% 60% at 22% 8%,
+      rgba(46, 62, 92, 0.5),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 70% 55% at 82% 92%,
+      rgba(74, 48, 40, 0.32),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 120% 90% at 50% 50%,
+      rgba(14, 19, 30, 0.9),
+      #05070b 78%
+    );
+}
+
+.wallpaper-grid {
+  background-image:
+    linear-gradient(rgba(140, 168, 210, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(140, 168, 210, 0.045) 1px, transparent 1px);
+  background-size: 62px 62px;
+  mask-image: radial-gradient(ellipse 75% 75% at 50% 45%, #000 20%, transparent 82%);
+}
+
+/* Very low-opacity film grain. Deliberately restrained. */
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  opacity: 0.035;
+}
+
+.scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.018) 0px,
+    rgba(255, 255, 255, 0.018) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+.vignette {
+  background: radial-gradient(
+    ellipse 78% 78% at 50% 50%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+/* ------------------------------------------------------------------ chrome */
+
+.window-shadow {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.7),
+    0 1px 0 0 rgba(255, 255, 255, 0.045) inset,
+    0 24px 60px -12px rgba(0, 0, 0, 0.85),
+    0 8px 20px -8px rgba(0, 0, 0, 0.6);
+}
+
+.inset-hairline {
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.035) inset;
+}
+
+/* ---------------------------------------------------------------- animation */
+
+@keyframes rgb-slip {
+  0%,
+  100% {
+    transform: translateX(0);
+    filter: none;
+  }
+  22% {
+    transform: translateX(-1px);
+    filter: drop-shadow(1px 0 0 rgba(184, 69, 47, 0.5))
+      drop-shadow(-1px 0 0 rgba(91, 126, 168, 0.5));
+  }
+  55% {
+    transform: translateX(1px);
+    filter: drop-shadow(-1px 0 0 rgba(184, 69, 47, 0.45));
+  }
+}
+.glitch-slip {
+  animation: rgb-slip 140ms steps(2, end) 1;
+}
+
+@keyframes sweep {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(2400%);
+  }
+}
+.sweep-line {
+  animation: sweep 7s linear infinite;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 2.4s ease-in-out infinite;
+}
+
+@keyframes caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.caret {
+  animation: caret 1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .sweep-line {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ typo -- */
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+.label-xs {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.no-drag {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
