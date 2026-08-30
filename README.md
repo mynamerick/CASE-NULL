@@ -35,6 +35,36 @@ CHROMIUM_PATH=/path/to/chrome npm run e2e
 
 Progress is stored in `localStorage`. **Reset case** in the menu bar wipes it.
 
+## Deploying
+
+The app has no backend, no database and no environment variables, so it
+deploys as a stock Next.js project with no configuration.
+
+**Vercel** (easiest, works from a phone):
+
+1. [vercel.com](https://vercel.com) → sign in with GitHub.
+2. **Add New… → Project** → import `mynamerick/Mystery`.
+3. Leave every setting alone — the framework, build command and root directory
+   are detected correctly. There is nothing to configure.
+4. **Deploy.**
+
+The repo's default branch is `claude/mystery-investigation-game-it9r0m`, so
+Vercel treats it as Production and every push redeploys.
+
+Anywhere else that runs Node works too: `npm ci && npm run build && npm start`.
+
+### Testing on a phone over your local network
+
+If you're running the dev server on a laptop and want to open it on a phone on
+the same Wi-Fi:
+
+```bash
+npm run dev -- -H 0.0.0.0
+```
+
+Then browse to `http://<your-laptop-ip>:3000` from the phone.
+
+
 ## Where things live
 
 ```
