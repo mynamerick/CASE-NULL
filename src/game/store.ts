@@ -64,6 +64,8 @@ interface GameState extends ProgressSlice {
   caseId: string | null;
   loadStatus: CaseLoadStatus;
   loadAttempt: number;
+  /** Session-only gate for the boot terminal — not saved to the cloud record. */
+  bootPending: boolean;
   windows: WindowState[];
   topZ: number;
   toasts: Toast[];
@@ -132,6 +134,7 @@ const initialProgress: ProgressSlice = {
 
 /** Session-only state, cleared whenever a case is loaded or reset. */
 const initialSession = {
+  bootPending: true,
   windows: [] as WindowState[],
   topZ: 10,
   toasts: [] as Toast[],
@@ -161,7 +164,7 @@ export const useGame = create<GameState>()((set, get) => ({
   retryCaseLoad: () =>
     set((s) => ({ loadStatus: "loading", loadAttempt: s.loadAttempt + 1 })),
 
-  markBooted: () => set({ booted: true }),
+  markBooted: () => set({ booted: true, bootPending: false }),
 
   openApp: (appId) =>
     set((s) => {

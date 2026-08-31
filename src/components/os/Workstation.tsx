@@ -12,10 +12,13 @@ import { ProgressSync } from "./ProgressSync";
  * Entry point. Progress lives on the server, so the desktop waits for the case
  * record: rendering it early would show an empty board to a player who has
  * hours of work saved, and the first write would then erase it.
+ *
+ * The boot terminal is session-only (`bootPending`) — it runs on every /play
+ * load and again after reset, not once per saved case record.
  */
 export function Workstation({ caseId }: { caseId: string }) {
   const loadStatus = useGame((s) => s.loadStatus);
-  const booted = useGame((s) => s.booted);
+  const bootPending = useGame((s) => s.bootPending);
   const markBooted = useGame((s) => s.markBooted);
   const retryCaseLoad = useGame((s) => s.retryCaseLoad);
 
@@ -28,7 +31,7 @@ export function Workstation({ caseId }: { caseId: string }) {
         <>
           <Desktop />
           <AnimatePresence>
-            {!booted && <BootScreen key="boot" onDone={markBooted} />}
+            {bootPending && <BootScreen key="boot" onDone={markBooted} />}
           </AnimatePresence>
         </>
       ) : loadStatus === "error" ? (
