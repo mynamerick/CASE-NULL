@@ -13,6 +13,7 @@ interface PrefsState {
   effectsEnabled: boolean;
   volume: number;
   toggleSound: () => void;
+  setSoundEnabled: (on: boolean) => void;
   toggleEffects: () => void;
   setVolume: (value: number) => void;
 }
@@ -25,6 +26,7 @@ export const usePrefs = create<PrefsState>()(
       volume: 0.7,
 
       toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
+      setSoundEnabled: (on) => set({ soundEnabled: on }),
       toggleEffects: () => set((s) => ({ effectsEnabled: !s.effectsEnabled })),
       setVolume: (value) =>
         set({ volume: Math.min(1, Math.max(0, value)) }),

@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  Volume2,
-  VolumeX,
   Sparkles,
   RotateCcw,
   ShieldAlert,
@@ -16,6 +14,7 @@ import { computeProgress } from "@/game/progress";
 import { SystemClock } from "./SystemClock";
 import { ProgressIndicator } from "./ProgressIndicator";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { SoundControl } from "./SoundControl";
 import { activeCase } from "@/cases/the-last-message";
 import { cn } from "@/lib/utils";
 
@@ -24,9 +23,7 @@ type CaseDialog = "leave" | "reset" | null;
 export function MenuBar() {
   const discovered = useGame((s) => s.discovered);
   const submission = useGame((s) => s.submission);
-  const soundEnabled = usePrefs((s) => s.soundEnabled);
   const effectsEnabled = usePrefs((s) => s.effectsEnabled);
-  const toggleSound = usePrefs((s) => s.toggleSound);
   const toggleEffects = usePrefs((s) => s.toggleEffects);
   const { reset, abandon, pending } = useCaseActions();
 
@@ -116,17 +113,7 @@ export function MenuBar() {
 
         <span className="hidden h-3 w-px bg-line sm:block" />
 
-        <MenuButton
-          label={soundEnabled ? "Mute" : "Unmute"}
-          onClick={toggleSound}
-          active={soundEnabled}
-        >
-          {soundEnabled ? (
-            <Volume2 className="h-3.5 w-3.5" />
-          ) : (
-            <VolumeX className="h-3.5 w-3.5" />
-          )}
-        </MenuButton>
+        <SoundControl />
 
         <MenuButton
           label={effectsEnabled ? "Disable screen effects" : "Enable screen effects"}

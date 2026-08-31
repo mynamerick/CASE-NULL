@@ -19,6 +19,10 @@ export function AudioBridge() {
   const mounted = useRef(false);
 
   useEffect(() => {
+    void audio.preloadAmbient();
+  }, []);
+
+  useEffect(() => {
     audio.setEnabled(soundEnabled);
 
     // Unmuting is otherwise silent until something happens to make a noise.
@@ -36,8 +40,13 @@ export function AudioBridge() {
       return;
     }
     audio.startAmbient();
-    return () => audio.stopAmbient();
+    return () => {
+      audio.stopAmbient();
+    };
   }, [soundEnabled]);
+
+  // Belt-and-braces: cut ambient the moment this bridge unmounts (route change).
+  useEffect(() => () => audio.stopAmbient(), []);
 
   useEffect(() => {
     const onPointerDown = (e: PointerEvent) => {

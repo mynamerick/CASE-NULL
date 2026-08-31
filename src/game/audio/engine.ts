@@ -26,12 +26,10 @@ export type CueName =
   | "verdict-good"
   | "verdict-bad";
 
-/**
- * Point this at a file under /public (e.g. "/audio/room-tone.mp3") to use a
- * recorded room tone instead of the generated one. Left as "synth" there is no
- * request, no 404, and no asset to ship.
- */
-const AMBIENT_SOURCE: string = "synth";
+/** Room ambient loop — served from public/audio/. */
+const AMBIENT_SOURCE = "/audio/room-tone.mp3";
+const AMBIENT_FADE_IN_SEC = 0.8;
+const AMBIENT_PEAK_GAIN = 0.3;
 
 /** Stops a repeated cue from stacking into mush. */
 const COOLDOWN_MS = 40;
@@ -48,8 +46,12 @@ let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let noise: AudioBuffer | null = null;
 let ambientStop: (() => void) | null = null;
+let ambientBuffer: AudioBuffer | null = null;
+let ambientLoadPromise: Promise<AudioBuffer | null> | null = null;
+/** Invalidates in-flight ambient starts when leaving /play or calling stop. */
+let ambientGeneration = 0;
 let enabled = false;
-let volume = 0.7;
+let volume = 1.0;
 let gestureHooked = false;
 const lastAt = new Map<CueName, number>();
 let recent: number[] = [];
@@ -279,103 +281,70 @@ const CUES: Record<CueName, (c: AudioContext, out: AudioNode) => void> = {
   },
 };
 
-/** Evidence-room hum: filtered noise, mains buzz, and a very slow drift. */
-function startSynthAmbient(c: AudioContext, out: AudioNode): () => void {
+async function loadAmbientBuffer(c: AudioContext): Promise<AudioBuffer | null> {
+  if (ambientBuffer) return ambientBuffer;
+
+  if (!ambientLoadPromise) {
+    ambientLoadPromise = (async () => {
+      try {
+        const res = await fetch(AMBIENT_SOURCE);
+        if (!res.ok) return null;
+        ambientBuffer = await c.decodeAudioData(await res.arrayBuffer());
+        return ambientBuffer;
+      } catch {
+        return null;
+      }
+    })();
+  }
+
+  return ambientLoadPromise;
+}
+
+function playAmbientBuffer(
+  c: AudioContext,
+  out: AudioNode,
+  buffer: AudioBuffer,
+): () => void {
   const src = c.createBufferSource();
-  src.buffer = noiseBuffer(c);
+  src.buffer = buffer;
   src.loop = true;
 
-  const lp = c.createBiquadFilter();
-  lp.type = "lowpass";
-  lp.frequency.value = 220;
-  lp.Q.value = 0.7;
-
-  const noiseGain = c.createGain();
-  noiseGain.gain.value = 0.0001;
-
-  const hum = c.createOscillator();
-  hum.frequency.value = 50;
-  const harmonic = c.createOscillator();
-  harmonic.frequency.value = 100;
-  const humGain = c.createGain();
-  humGain.gain.value = 0.0001;
-
-  // Without this the tone sits perfectly still and reads as a dead loop.
-  const drift = c.createOscillator();
-  drift.frequency.value = 0.06;
-  const driftDepth = c.createGain();
-  driftDepth.gain.value = 40;
-  drift.connect(driftDepth).connect(lp.frequency);
-
-  src.connect(lp).connect(noiseGain).connect(out);
-  hum.connect(humGain).connect(out);
-  harmonic.connect(humGain);
-
-  const t = c.currentTime;
-  noiseGain.gain.linearRampToValueAtTime(0.032, t + 2.5);
-  humGain.gain.linearRampToValueAtTime(0.011, t + 2.5);
-
+  const g = c.createGain();
+  g.gain.value = 0.0001;
+  src.connect(g).connect(out);
+  g.gain.linearRampToValueAtTime(AMBIENT_PEAK_GAIN, c.currentTime + AMBIENT_FADE_IN_SEC);
   src.start();
-  hum.start();
-  harmonic.start();
-  drift.start();
 
   return () => {
     const now = c.currentTime;
-    noiseGain.gain.cancelScheduledValues(now);
-    humGain.gain.cancelScheduledValues(now);
-    noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.6);
-    humGain.gain.linearRampToValueAtTime(0.0001, now + 0.6);
+    g.gain.cancelScheduledValues(now);
+    g.gain.linearRampToValueAtTime(0.0001, now + 0.4);
     window.setTimeout(() => {
-      for (const node of [src, hum, harmonic, drift]) {
-        try {
-          node.stop();
-        } catch {
-          // Already stopped.
-        }
+      try {
+        src.stop();
+      } catch {
+        // Already stopped.
       }
-    }, 800);
+    }, 500);
   };
 }
 
 async function startFileAmbient(
   c: AudioContext,
   out: AudioNode,
-  url: string,
 ): Promise<(() => void) | null> {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const buffer = await c.decodeAudioData(await res.arrayBuffer());
-
-    const src = c.createBufferSource();
-    src.buffer = buffer;
-    src.loop = true;
-
-    const g = c.createGain();
-    g.gain.value = 0.0001;
-    src.connect(g).connect(out);
-    g.gain.linearRampToValueAtTime(0.3, c.currentTime + 2.5);
-    src.start();
-
-    return () => {
-      const now = c.currentTime;
-      g.gain.cancelScheduledValues(now);
-      g.gain.linearRampToValueAtTime(0.0001, now + 0.6);
-      window.setTimeout(() => {
-        try {
-          src.stop();
-        } catch {
-          // Already stopped.
-        }
-      }, 800);
-    };
-  } catch {
-    return null;
-  }
+  const buffer = await loadAmbientBuffer(c);
+  if (!buffer) return null;
+  return playAmbientBuffer(c, out, buffer);
 }
 
 export const audio = {
+  /** Fetch and decode the room tone so /play can start playback immediately. */
+  preloadAmbient(): Promise<AudioBuffer | null> {
+    const c = getCtx();
+    if (!c) return Promise.resolve(null);
+    return loadAmbientBuffer(c);
+  },
   setEnabled(on: boolean) {
     enabled = on;
     if (!on) {
@@ -420,26 +389,25 @@ export const audio = {
   },
 
   startAmbient() {
-    if (!enabled || ambientStop) return;
+    if (!enabled) return;
     const c = getCtx();
     if (!c || !master) return;
-    const out = master;
 
-    if (AMBIENT_SOURCE === "synth") {
-      ambientStop = startSynthAmbient(c, out);
-      return;
-    }
+    const gen = ++ambientGeneration;
+    ambientStop?.();
+    ambientStop = null;
 
-    void startFileAmbient(c, out, AMBIENT_SOURCE).then((stop) => {
-      if (!enabled) {
+    void startFileAmbient(c, master).then((stop) => {
+      if (gen !== ambientGeneration || !enabled) {
         stop?.();
         return;
       }
-      ambientStop = stop ?? startSynthAmbient(c, out);
+      ambientStop = stop;
     });
   },
 
   stopAmbient() {
+    ambientGeneration += 1;
     ambientStop?.();
     ambientStop = null;
   },

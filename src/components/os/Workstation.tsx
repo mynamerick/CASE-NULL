@@ -22,10 +22,10 @@ export function Workstation({ caseId }: { caseId: string }) {
   return (
     <>
       <ProgressSync caseId={caseId} />
+      {loadStatus !== "error" ? <AudioBridge /> : null}
 
       {loadStatus === "ready" ? (
         <>
-          <AudioBridge />
           <Desktop />
           <AnimatePresence>
             {!booted && <BootScreen key="boot" onDone={markBooted} />}

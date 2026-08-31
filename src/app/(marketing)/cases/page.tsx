@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { CaseCatalogCard } from "@/components/marketing/CaseCatalogCard";
+import { AmbientPreload } from "@/game/audio/AmbientPreload";
 import { getCaseCatalog } from "@/lib/catalog";
 import { hasPremiumAccess } from "@/lib/features";
 import { BRAND } from "@/lib/brand";
@@ -20,6 +21,7 @@ export default async function CasesPage() {
 
   return (
     <div className="min-h-[100dvh] bg-void">
+      <AmbientPreload />
       <div className="border-b border-line-soft bg-abyss">
         <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-16">
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-faint">

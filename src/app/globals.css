@@ -226,14 +226,16 @@ select {
 
 @keyframes sweep {
   from {
-    transform: translateY(-100%);
+    transform: translateY(0);
   }
   to {
-    transform: translateY(2400%);
+    transform: translateY(100dvh);
   }
 }
 .sweep-line {
-  animation: sweep 7s linear infinite;
+  animation: sweep 120s linear infinite;
+  will-change: transform;
+  opacity: 0.5;
 }
 
 @keyframes pulse-dot {

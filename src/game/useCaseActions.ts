@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { progressSnapshot, useGame } from "@/game/store";
+import { audio } from "@/game/audio/engine";
 import { deleteRemoteProgress, saveRemoteProgress } from "@/lib/progress-client";
 
 export type CaseAction = "reset" | "abandon";
@@ -53,6 +54,7 @@ export function useCaseActions() {
       // Leaving is navigation, not a save. A failed flag must not trap the player.
     } finally {
       setPending(null);
+      audio.stopAmbient();
       router.push("/cases");
     }
   }, [caseId, pending, router]);

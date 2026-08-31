@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
+import { AmbientPreload } from "@/game/audio/AmbientPreload";
 
 export const metadata: Metadata = {
   title: "Workstation",
@@ -10,5 +11,10 @@ export const metadata: Metadata = {
 
 export default async function PlayLayout({ children }: { children: React.ReactNode }) {
   await auth.protect();
-  return <main id="main">{children}</main>;
+  return (
+    <main id="main">
+      <AmbientPreload />
+      {children}
+    </main>
+  );
 }
