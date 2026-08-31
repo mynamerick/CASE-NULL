@@ -48,6 +48,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/marketing/og-image.png",
+        width: 1200,
+        height: 630,
         alt: `${BRAND.name} — browser mystery cases`,
       },
     ],
