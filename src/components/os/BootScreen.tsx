@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShieldAlert } from "lucide-react";
 import { activeCase } from "@/cases/the-last-message";
+import { audio } from "@/game/audio/engine";
 
 const LINES: { text: string; delay: number }[] = [
   { text: "HOLLOWAY FORENSIC REVIEW WORKSTATION — TERMINAL 04", delay: 90 },
@@ -34,16 +35,23 @@ export function BootScreen({ onDone }: { onDone: () => void }) {
   const skipped = useRef(false);
 
   useEffect(() => {
+    audio.play("boot-start");
+  }, []);
+
+  useEffect(() => {
     if (shown >= LINES.length) {
       const t = setTimeout(() => setPhase("loaded"), 320);
       return () => clearTimeout(t);
     }
+    // Blank lines are spacing, not output — they shouldn't tick.
+    if (shown > 0 && LINES[shown - 1].text !== "") audio.play("boot-line");
     const t = setTimeout(() => setShown((n) => n + 1), LINES[shown].delay);
     return () => clearTimeout(t);
   }, [shown]);
 
   useEffect(() => {
     if (phase !== "loaded") return;
+    audio.play("case-reveal");
     const t = setTimeout(onDone, 1500);
     return () => clearTimeout(t);
   }, [phase, onDone]);

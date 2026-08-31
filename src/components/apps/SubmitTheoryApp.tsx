@@ -1,16 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Gavel, AlertTriangle, Check, X, RotateCcw } from "lucide-react";
 import { activeCase } from "@/cases/the-last-message";
 import { useGame, allVisible } from "@/game/store";
-import {
-  scoreTheory,
-  buildDebrief,
-  rankFor,
-  type ScoreResult,
-} from "@/game/solution";
+import { audio } from "@/game/audio/engine";
+import type { Debrief, Rank, ScoreResult } from "@/game/solution";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
@@ -296,18 +292,46 @@ function Debrief() {
   const submission = useGame((s) => s.submission)!;
   const discovered = useGame((s) => s.discovered);
   const clearSubmission = useGame((s) => s.clearSubmission);
+  const [evaluation, setEvaluation] = useState<{
+    result: ScoreResult;
+    debrief: Debrief;
+    rank: Rank;
+  } | null>(null);
 
-  const result = useMemo(
-    () => scoreTheory(submission, discovered),
-    [submission, discovered],
-  );
-  const debrief = useMemo(() => buildDebrief(), []);
-  const rank = rankFor(result.total);
+  useEffect(() => {
+    let cancelled = false;
+    import("@/game/solution").then((mod) => {
+      if (cancelled) return;
+      const result = mod.scoreTheory(submission, discovered);
+      setEvaluation({
+        result,
+        debrief: mod.buildDebrief(),
+        rank: mod.rankFor(result.total),
+      });
+      // Naming the right person is the verdict; the score is commentary on it.
+      audio.play(result.suspectCorrect ? "verdict-good" : "verdict-bad");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [submission, discovered]);
 
   const evidenceById = useMemo(
     () => new Map(allVisible(discovered).map((e) => [e.id, e])),
     [discovered],
   );
+
+  if (!evaluation) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-ghost">
+          Compiling report
+        </span>
+      </div>
+    );
+  }
+
+  const { result, debrief, rank } = evaluation;
 
   return (
     <div className="scroll-thin h-full overflow-y-auto" data-testid="debrief">

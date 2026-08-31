@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useGame } from "@/game/store";
+import { usePrefs } from "@/game/prefs";
 
 /**
  * Film grain, faint scanlines and a slow sweep. Everything here is decorative
  * and pointer-transparent, and the whole layer can be switched off.
  */
 export function NoiseOverlay() {
-  const effectsEnabled = useGame((s) => s.effectsEnabled);
+  const effectsEnabled = usePrefs((s) => s.effectsEnabled);
   const [reduced, setReduced] = useState(false);
 
   useEffect(() => {

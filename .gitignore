@@ -1,10 +1,41 @@
+# Dependencies
 node_modules/
+
+# Next.js
 .next/
 out/
 build/
+
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
-.env*
+
+# Environment (keep .env.example committed as the template)
+.env
+.env.*
+!.env.example
+
+# Local docs / notes (personal roadmap — not for the repo)
+_docs/
+
+# Cursor local config (MCP, etc.)
+.cursor/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Test / QA artifacts
 test-results/
 screenshots/
+playwright-report/
+blob-report/
+
+# Vercel
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.vercel

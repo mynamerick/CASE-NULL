@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Lock, KeyRound } from "lucide-react";
 import type { EvidenceItem } from "@/game/types";
 import { useGame } from "@/game/store";
+import { audio } from "@/game/audio/engine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -23,7 +24,10 @@ export function LockedItemGate({ item }: { item: EvidenceItem }) {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!value.trim()) return;
+    // A success is announced by the store transition; only the failure is
+    // invisible to state, so it has to speak for itself here.
     if (!attemptUnlock(item.id, value)) {
+      audio.play("unlock-fail");
       setFailed((n) => n + 1);
       setShake((n) => n + 1);
       setValue("");
@@ -63,8 +67,12 @@ export function LockedItemGate({ item }: { item: EvidenceItem }) {
             onChange={(e) => setValue(e.target.value)}
             placeholder="Password"
             autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
             spellCheck={false}
-            aria-label="Password"
+            aria-invalid={failed > 0}
+            aria-describedby={failed > 0 ? "lock-error" : undefined}
+            aria-label="File password"
             data-testid="password-input"
             className="font-mono"
           />
@@ -75,7 +83,7 @@ export function LockedItemGate({ item }: { item: EvidenceItem }) {
         </form>
 
         {failed > 0 && (
-          <p className="mt-3 font-mono text-[11px] text-signal" role="alert">
+          <p id="lock-error" className="mt-3 font-mono text-[11px] text-signal" role="alert">
             Incorrect password — {failed} failed attempt{failed === 1 ? "" : "s"}.
           </p>
         )}

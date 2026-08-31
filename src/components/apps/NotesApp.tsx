@@ -41,6 +41,23 @@ export function NotesApp() {
     return () => clearTimeout(t);
   }, [draft, notes, setNotes]);
 
+  useEffect(() => {
+    const flush = () => {
+      if (draft !== useGame.getState().notes) {
+        setNotes(draft);
+      }
+    };
+    const onHidden = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", onHidden);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", onHidden);
+    };
+  }, [draft, setNotes]);
+
   const edit = (value: string) => {
     setDraft(value);
     setSaved(false);
@@ -74,7 +91,7 @@ export function NotesApp() {
 
       <div className="flex shrink-0 items-center justify-between border-t border-line px-3 py-1.5 font-mono text-[10px] text-ink-ghost">
         <span>{words} words</span>
-        <span>Stored locally on this terminal</span>
+        <span>Autosaved</span>
       </div>
     </div>
   );

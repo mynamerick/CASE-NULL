@@ -64,6 +64,7 @@ function FileRow({
           {c.format}
         </span>
         <span
+          title={c.filename}
           className={cn(
             "min-w-0 flex-1 truncate font-mono text-[12px]",
             opened ? "text-ink-dim" : "text-ink",

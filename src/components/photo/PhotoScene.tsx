@@ -33,8 +33,8 @@ export function PhotoScene({ scene, className }: Props) {
           <stop offset="100%" stopColor="#0d0b09" />
         </linearGradient>
         <radialGradient id="ps-lamp" cx="50%" cy="50%">
-          <stop offset="0%" stopColor="#d99a2b" stopOpacity="0.42" />
-          <stop offset="100%" stopColor="#d99a2b" stopOpacity="0" />
+          <stop offset="0%" stopColor="#9f3838" stopOpacity="0.42" />
+          <stop offset="100%" stopColor="#9f3838" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="ps-flash" cx="50%" cy="40%">
           <stop offset="0%" stopColor="#c9d2e0" stopOpacity="0.3" />
@@ -254,16 +254,16 @@ const SCENES: Record<SceneId, () => React.ReactElement> = {
         <rect key={x} x={x} y="82" width="22" height="30" fill="#141b28" opacity="0.7" />
       ))}
       {/* streetlamp cone */}
-      <path d="M296 30 L246 300 L370 300 Z" fill="#d99a2b" opacity="0.09" />
-      <circle cx="296" cy="30" r="7" fill="#d99a2b" opacity="0.55" />
+      <path d="M296 30 L246 300 L370 300 Z" fill="#9f3838" opacity="0.09" />
+      <circle cx="296" cy="30" r="7" fill="#9f3838" opacity="0.55" />
       <ellipse cx="300" cy="120" rx="70" ry="90" fill="url(#ps-lamp)" opacity="0.6" />
       {/* wet road */}
       <rect x="0" y="196" width="400" height="104" fill="#080b11" />
-      <ellipse cx="300" cy="250" rx="80" ry="30" fill="#d99a2b" opacity="0.07" />
+      <ellipse cx="300" cy="250" rx="80" ry="30" fill="#9f3838" opacity="0.07" />
       {/* the car pulling away, brake lights on */}
       {car(232, 176, 1, true)}
       {/* indicator */}
-      <circle cx="240" cy="212" r="4" fill="#d99a2b" opacity="0.9" />
+      <circle cx="240" cy="212" r="4" fill="#9f3838" opacity="0.9" />
       {/* the porch we're standing under */}
       <rect x="0" y="0" width="400" height="26" fill="#05070b" />
       {rain(0.34, 54)}
@@ -334,7 +334,7 @@ const SCENES: Record<SceneId, () => React.ReactElement> = {
             textAnchor="middle"
             fontSize="8"
             fontFamily="monospace"
-            fill={i === 2 ? "#d99a2b" : "#6b6152"}
+            fill={i === 2 ? "#9f3838" : "#6b6152"}
           >
             {[12, 13, 14, 15][i]}
           </text>

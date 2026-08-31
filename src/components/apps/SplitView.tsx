@@ -87,7 +87,9 @@ export function SplitView({
 
       <div className="scroll-thin min-h-0 flex-1 overflow-y-auto" data-testid="split-list">
         {filtered.length === 0 ? (
-          <p className="p-4 text-[12.5px] text-ink-ghost">{emptyMessage}</p>
+          <p className="p-4 text-[12.5px] text-ink-ghost">
+            {query.trim() ? "No matching items." : emptyMessage}
+          </p>
         ) : (
           <ul>
             {rows.map(({ item, group, startsGroup }) => {

@@ -12,19 +12,20 @@ tells you which piece of evidence matters.
 ## Running it
 
 ```bash
-npm install
-npm run dev          # http://localhost:3000
+pnpm install
+pnpm dev          # http://localhost:3000
 ```
 
 | Script | What it does |
 | --- | --- |
-| `npm run dev` | Dev server |
-| `npm run build` / `npm start` | Production build and serve |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint (flat config, `eslint-config-next` 16) |
-| `npm run verify:case` | Case consistency: timestamps, unlock graph, scoring, the linguistic tell |
-| `npm run e2e` | Playwright playthrough at 1440×900 and 390×844 (needs `npm run dev` running) |
-| `npm run build:solution` | Recompiles `reveal.source.ts` into the obfuscated blob |
+| `pnpm dev` | Dev server |
+| `pnpm build` / `pnpm start` | Production build and serve |
+| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm lint` | ESLint (flat config, `eslint-config-next` 16) |
+| `pnpm verify:case` | Case consistency: timestamps, unlock graph, scoring, the linguistic tell |
+| `pnpm e2e` | Playwright playthrough at 1440×900 and 390×844 (needs `pnpm dev` running) |
+| `pnpm build:solution` | Recompiles `reveal.source.ts` into the obfuscated blob |
+| `pnpm db:push` | Apply the Drizzle schema to Neon |
 
 `npm run e2e` needs a Chromium. If Playwright's own download is unavailable,
 point it at an existing binary:
@@ -33,25 +34,30 @@ point it at an existing binary:
 CHROMIUM_PATH=/path/to/chrome npm run e2e
 ```
 
-Progress is stored in `localStorage`. **Reset case** in the menu bar wipes it.
+Progress is stored in the browser and synced to the signed-in profile via
+`/api/progress` when Neon is configured. **Reset case** in the menu bar clears
+the current case.
 
 ## Deploying
 
-The app has no backend, no database and no environment variables, so it
-deploys as a stock Next.js project with no configuration.
+Stack: Next.js on Vercel, Clerk (auth + billing), Neon (progress), Cloudflare
+(DNS). Copy `.env.example` and set Clerk and `DATABASE_URL` in Vercel.
 
-**Vercel** (easiest, works from a phone):
+Apply the progress table once: `pnpm db:push` (or run `drizzle/0000_case_progress.sql`
+against Neon). Set `NEXT_PUBLIC_APP_URL` to the production origin.
 
-1. [vercel.com](https://vercel.com) → sign in with GitHub.
-2. **Add New… → Project** → import `mynamerick/Mystery`.
-3. Leave every setting alone — the framework, build command and root directory
-   are detected correctly. There is nothing to configure.
-4. **Deploy.**
+Set `SITE_MAINTENANCE=true` and redeploy to show the maintenance page.
 
-The repo's default branch is `claude/mystery-investigation-game-it9r0m`, so
-Vercel treats it as Production and every push redeploys.
+Set `COMING_SOON=true` and `COMING_SOON_PASSWORD` to block public access behind a
+password gate at `/coming-soon`. Testers who enter the key get a 30-day cookie and
+can browse normally. `SITE_MAINTENANCE` takes precedence if both are set.
 
-Anywhere else that runs Node works too: `npm ci && npm run build && npm start`.
+### Monitoring (PostHog)
+
+1. Create a project at [posthog.com](https://posthog.com).
+2. Set `NEXT_PUBLIC_POSTHOG_KEY`, `POSTHOG_API_KEY` (same project key, server-only), and optionally `NEXT_PUBLIC_POSTHOG_HOST` (EU: `https://eu.i.posthog.com`).
+3. Product analytics loads only after a visitor accepts non-essential cookies. Session replay is disabled.
+4. Client and API errors are sent to PostHog via `/api/log` and server routes without requiring cookie consent.
 
 ### Testing on a phone over your local network
 

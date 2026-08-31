@@ -1,3 +1,4 @@
+@layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
@@ -35,14 +36,14 @@
   --color-ink-ghost: #4a5364;
 
   /* Status — used sparingly, never decoratively */
-  --color-amber: #d99a2b;
+  --color-amber: #9f3838;
   --color-amber-dim: #8a6420;
   --color-signal: #b8452f;
   --color-signal-dim: #6d2a1d;
   --color-verified: #4d8a72;
   --color-cool: #5b7ea8;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+  --font-sans: var(--font-sans-stack), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-mono-stack), ui-monospace, "SF Mono", "Cascadia Mono",
     Menlo, Consolas, monospace;
@@ -60,6 +61,24 @@ html,
 body {
   height: 100%;
   overscroll-behavior: none;
+}
+
+html {
+  color-scheme: dark;
+}
+
+/* Clerk CSS variables — fallback when element classes don't reach a node. */
+:root {
+  --clerk-color-background: #10141c;
+  --clerk-color-foreground: #e7e9ee;
+  --clerk-color-muted-foreground: #a5adbd;
+  --clerk-color-input: #0a0d13;
+  --clerk-color-input-foreground: #e7e9ee;
+  --clerk-color-primary: #9f3838;
+  --clerk-color-primary-foreground: #e7e9ee;
+  --clerk-color-danger: #b8452f;
+  --clerk-color-success: #4d8a72;
+  --clerk-color-neutral: #a5adbd;
 }
 
 body {
@@ -244,6 +263,57 @@ select {
   animation: caret 1s steps(1) infinite;
 }
 
+@keyframes hex-drift {
+  from {
+    transform: translateY(-8%);
+  }
+  to {
+    transform: translateY(-38%);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: -3.5rem;
+  z-index: 100;
+  border-radius: 4px;
+  border: 1px solid var(--color-amber);
+  background: var(--color-shell);
+  padding: 0.6rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+.skip-link:focus {
+  top: 0.75rem;
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-amber) 75%, white);
+  outline-offset: 2px;
+}
+
+:target,
+:focus {
+  scroll-margin-top: 6rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -276,4 +346,71 @@ select {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+}
+
+/* Account — Clerk renders section content before the header in the DOM. */
+@layer clerk {
+  .account-clerk .cl-profileSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .account-clerk .cl-profileSectionHeader {
+    order: -1;
+  }
+
+  .account-clerk .cl-profileSectionContent {
+    order: 0;
+  }
+
+  .account-clerk .cl-profileSectionPrimaryButton,
+  .account-clerk .cl-profileSectionPrimaryButton__password,
+  .account-clerk .cl-profileSectionPrimaryButton__danger {
+    align-self: flex-start;
+    text-align: left;
+  }
+
+  /*
+   * “+ Connect account” sits outside profileSectionItemList. The last row in that list
+   * loses bottom padding (last:pb-0), while “+ Add email” stays inside the list and
+   * keeps py-3 below the row — match that gap: list gap (0.125rem) + item pb (0.75rem).
+   */
+  .account-clerk .cl-profileSectionItemList + div {
+    margin-top: 0.875rem;
+  }
+
+  .account-clerk
+    .cl-menuButton:not(.cl-menuButtonEllipsis):not(.cl-menuButtonEllipsisBordered) {
+    align-self: flex-start;
+    justify-content: flex-start;
+    height: 2rem;
+    padding: 0.375rem 0.75rem 0.375rem 0.625rem;
+    text-align: left;
+    font-family: var(--font-mono-stack), ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9f3838 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .account-clerk
+    .cl-menuButton:not(.cl-menuButtonEllipsis):not(.cl-menuButtonEllipsisBordered):hover,
+  .account-clerk
+    .cl-menuButton:not(.cl-menuButtonEllipsis):not(.cl-menuButtonEllipsisBordered):focus-visible {
+    color: #e7e9ee !important;
+    background: transparent !important;
+  }
+
+  .account-clerk
+    .cl-menuButton:not(.cl-menuButtonEllipsis):not(.cl-menuButtonEllipsisBordered)
+    span,
+  .account-clerk
+    .cl-menuButton:not(.cl-menuButtonEllipsis):not(.cl-menuButtonEllipsisBordered)
+    svg {
+    color: inherit !important;
+  }
 }

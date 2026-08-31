@@ -10,7 +10,11 @@ export function NotificationToasts() {
   const dismiss = useGame((s) => s.dismissToast);
 
   return (
-    <div className="pointer-events-none fixed bottom-24 right-3 z-[9500] flex w-[min(19rem,calc(100vw-1.5rem))] flex-col gap-2 md:bottom-24">
+    <div
+      className="pointer-events-none fixed bottom-24 right-3 z-[9500] flex w-[min(19rem,calc(100vw-1.5rem))] flex-col gap-2 md:bottom-24"
+      aria-live="polite"
+      aria-relevant="additions"
+    >
       <AnimatePresence initial={false}>
         {toasts.map((t) => (
           <Toast key={t.id} {...t} onDismiss={dismiss} />

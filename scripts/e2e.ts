@@ -11,7 +11,7 @@
 import { chromium, type Page, type Browser } from "playwright";
 import { mkdirSync } from "node:fs";
 
-const URL = process.env.E2E_URL ?? "http://localhost:3000";
+const URL = process.env.E2E_URL ?? "http://localhost:3000/play";
 const SHOTS = "screenshots";
 
 let failures = 0;
