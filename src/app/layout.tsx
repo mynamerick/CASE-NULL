@@ -47,8 +47,8 @@ export const metadata: Metadata = {
     description: BRAND.description,
     images: [
       {
-        url: "/marketing/hero.png",
-        alt: `${BRAND.name} forensic workstation`,
+        url: "/marketing/og-image.png",
+        alt: `${BRAND.name} — browser mystery cases`,
       },
     ],
   },
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: BRAND.title,
     description: BRAND.description,
-    images: ["/marketing/hero.png"],
+    images: ["/marketing/og-image.png"],
   },
   icons: {
     icon: [
