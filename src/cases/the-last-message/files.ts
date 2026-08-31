@@ -1,4 +1,5 @@
 import type { EvidenceItem } from "@/game/types";
+import { OPERATOR_TOKEN } from "@/game/operator";
 import { veil } from "@/game/unlocks";
 
 /**
@@ -124,7 +125,7 @@ export const files: EvidenceItem[] = [
         },
         {
           type: "note",
-          author: "DC R. Ellery",
+          author: OPERATOR_TOKEN,
           text:
             "The condition of these items is not consistent with them having lain on an open towpath through that night's rainfall. My working view is that they were placed there some time after the rain stopped, or were kept dry until shortly before they were placed. Underwater search of this stretch has found nothing.",
         },
@@ -221,7 +222,7 @@ export const files: EvidenceItem[] = [
         },
         {
           type: "note",
-          author: "DC R. Ellery",
+          author: OPERATOR_TOKEN,
           text:
             "This is the last confirmed sighting of Maya Hart. Everything after this point is inference.",
         },

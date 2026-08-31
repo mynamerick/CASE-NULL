@@ -29,7 +29,14 @@ export type CueName =
 /** Room ambient loop — served from public/audio/. */
 const AMBIENT_SOURCE = "/audio/room-tone.mp3";
 const AMBIENT_FADE_IN_SEC = 0.8;
-const AMBIENT_PEAK_GAIN = 0.3;
+const AMBIENT_PEAK_GAIN = 0.5;
+
+/**
+ * Laptop speakers roll off steeply below roughly 300 Hz and have little output
+ * to spare, so the cues are mixed hot and a compressor catches the overlaps
+ * rather than the mix being kept quiet enough to never need one.
+ */
+const MASTER_TRIM = 2.4;
 
 /** Stops a repeated cue from stacking into mush. */
 const COOLDOWN_MS = 40;
@@ -40,14 +47,19 @@ const COOLDOWN_MS = 40;
  * important cue first; the rest are dropped rather than layered.
  */
 const BURST_WINDOW_MS = 60;
-const BURST_MAX = 2;
+const BURST_MAX = 3;
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let noise: AudioBuffer | null = null;
 let ambientStop: (() => void) | null = null;
-let ambientBuffer: AudioBuffer | null = null;
-let ambientLoadPromise: Promise<AudioBuffer | null> | null = null;
+let ambientEl: HTMLAudioElement | null = null;
+let ambientElSource: MediaElementAudioSourceNode | null = null;
+let ambientGain: GainNode | null = null;
+/** Serialises overlapping start attempts on the single ambient element. */
+let ambientStarting = false;
+/** True while /play wants room tone — survives until stopAmbient or unmount. */
+let ambientWanted = false;
 /** Invalidates in-flight ambient starts when leaving /play or calling stop. */
 let ambientGeneration = 0;
 let enabled = false;
@@ -70,23 +82,39 @@ function getCtx(): AudioContext | null {
   noise = null;
   master = ctx.createGain();
   master.gain.value = enabled ? volume : 0;
-  master.connect(ctx.destination);
+
+  const trim = ctx.createGain();
+  trim.gain.value = MASTER_TRIM;
+
+  // Only engages when cues overlap or ambient and a cue land together.
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -8;
+  comp.knee.value = 6;
+  comp.ratio.value = 6;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.12;
+
+  master.connect(trim).connect(comp).connect(ctx.destination);
   hookGesture();
   return ctx;
 }
 
 /**
- * Autoplay policy suspends a context created without a user gesture — landing
- * straight on /play via a reload, for instance. Resume on the next interaction.
+ * The autoplay policy only lifts on a real gesture, and client-side navigation
+ * keeps the same document — so the click that opens a case from the catalog is
+ * the one that unlocks playback, and the boot terminal has sound from its first
+ * line. Listeners stay attached because the first resume can still be refused.
  */
 function hookGesture() {
   if (gestureHooked || typeof window === "undefined") return;
   gestureHooked = true;
-  const resume = () => {
-    if (ctx && ctx.state === "suspended") void ctx.resume();
+  const unlock = () => {
+    const c = getCtx();
+    if (!c) return;
+    void resumeContext(c).then(maybeKickAmbient);
   };
-  window.addEventListener("pointerdown", resume, { passive: true });
-  window.addEventListener("keydown", resume);
+  window.addEventListener("pointerdown", unlock, { capture: true, passive: true });
+  window.addEventListener("keydown", unlock, { capture: true });
 }
 
 function noiseBuffer(c: AudioContext): AudioBuffer {
@@ -166,184 +194,247 @@ function burst(c: AudioContext, dest: AudioNode, o: BurstOpts = {}) {
   src.stop(t0 + dur + 0.02);
 }
 
+/*
+ * Every cue carries its weight in the 300 Hz–3 kHz band. The low layers are
+ * still there for headphones and desk speakers, but nothing depends on them
+ * alone: a cue whose only content is a 40 Hz rumble does not exist on a laptop.
+ */
 const CUES: Record<CueName, (c: AudioContext, out: AudioNode) => void> = {
   /** Drive spinning up behind the first boot lines. */
   "boot-start": (c, out) => {
-    tone(c, out, { freq: 38, to: 88, dur: 0.9, peak: 0.09, attack: 0.3 });
-    burst(c, out, { dur: 0.5, freq: 240, type: "lowpass", peak: 0.025 });
+    tone(c, out, { freq: 55, to: 130, dur: 0.9, peak: 0.14, attack: 0.3 });
+    tone(c, out, { freq: 220, to: 330, type: "triangle", dur: 0.8, peak: 0.09, attack: 0.25 });
+    burst(c, out, { dur: 0.6, freq: 620, type: "lowpass", peak: 0.07 });
   },
 
   "boot-line": (c, out) => {
     burst(c, out, {
-      dur: 0.014,
+      dur: 0.03,
       freq: 2400 + Math.random() * 900,
       q: 1.4,
-      peak: 0.026,
+      peak: 0.085,
     });
   },
 
   /** Case file loaded — low swell, one high shimmer well behind it. */
   "case-reveal": (c, out) => {
-    tone(c, out, { freq: 110, dur: 1.6, peak: 0.1, attack: 0.14 });
-    tone(c, out, { freq: 220, dur: 1.3, peak: 0.045, attack: 0.2 });
+    tone(c, out, { freq: 110, dur: 1.6, peak: 0.16, attack: 0.14 });
+    tone(c, out, { freq: 220, dur: 1.3, peak: 0.12, attack: 0.2 });
+    tone(c, out, { freq: 440, type: "triangle", dur: 1.1, peak: 0.08, attack: 0.22 });
     tone(c, out, {
       freq: 660,
       type: "triangle",
       dur: 0.9,
-      peak: 0.028,
+      peak: 0.06,
       attack: 0.3,
       delay: 0.2,
     });
   },
 
   click: (c, out) => {
-    burst(c, out, { dur: 0.012, freq: 1700, q: 1.1, peak: 0.03 });
-    tone(c, out, { freq: 320, type: "square", dur: 0.02, peak: 0.01 });
+    burst(c, out, { dur: 0.018, freq: 1700, q: 1.1, peak: 0.09 });
+    tone(c, out, { freq: 420, type: "square", dur: 0.025, peak: 0.04 });
   },
 
   "window-open": (c, out) => {
-    tone(c, out, { freq: 200, to: 420, dur: 0.13, peak: 0.045 });
+    tone(c, out, { freq: 260, to: 520, dur: 0.13, peak: 0.12 });
   },
 
   "window-close": (c, out) => {
-    tone(c, out, { freq: 380, to: 160, dur: 0.11, peak: 0.04 });
+    tone(c, out, { freq: 520, to: 240, dur: 0.12, peak: 0.11 });
   },
 
   /** New evidence. A restrained two-note figure, not a reward jingle. */
   evidence: (c, out) => {
-    tone(c, out, { freq: 587.33, type: "triangle", dur: 0.16, peak: 0.055 });
+    tone(c, out, { freq: 587.33, type: "triangle", dur: 0.16, peak: 0.14 });
     tone(c, out, {
       freq: 784,
       type: "triangle",
       dur: 0.34,
-      peak: 0.05,
+      peak: 0.12,
       attack: 0.01,
       delay: 0.13,
     });
   },
 
   notice: (c, out) => {
-    tone(c, out, { freq: 520, type: "triangle", dur: 0.12, peak: 0.03 });
+    tone(c, out, { freq: 520, type: "triangle", dur: 0.12, peak: 0.09 });
   },
 
   "unlock-success": (c, out) => {
-    tone(c, out, { freq: 440, type: "triangle", dur: 0.1, peak: 0.045 });
-    tone(c, out, { freq: 660, type: "triangle", dur: 0.1, peak: 0.045, delay: 0.08 });
-    tone(c, out, { freq: 880, type: "triangle", dur: 0.3, peak: 0.04, delay: 0.16 });
+    tone(c, out, { freq: 440, type: "triangle", dur: 0.1, peak: 0.12 });
+    tone(c, out, { freq: 660, type: "triangle", dur: 0.1, peak: 0.12, delay: 0.08 });
+    tone(c, out, { freq: 880, type: "triangle", dur: 0.3, peak: 0.1, delay: 0.16 });
   },
 
   /** Dull and mechanical. Wrong, not punishing. */
   "unlock-fail": (c, out) => {
-    tone(c, out, { freq: 150, to: 110, type: "square", dur: 0.2, peak: 0.04 });
-    burst(c, out, { dur: 0.07, freq: 320, type: "lowpass", peak: 0.025 });
+    tone(c, out, { freq: 240, to: 150, type: "square", dur: 0.22, peak: 0.1 });
+    burst(c, out, { dur: 0.09, freq: 520, type: "lowpass", peak: 0.07 });
   },
 
   pin: (c, out) => {
-    burst(c, out, { dur: 0.03, freq: 1100, q: 1.6, peak: 0.04 });
-    tone(c, out, { freq: 190, to: 120, dur: 0.07, peak: 0.045 });
+    burst(c, out, { dur: 0.035, freq: 1100, q: 1.6, peak: 0.11 });
+    tone(c, out, { freq: 330, to: 190, dur: 0.08, peak: 0.1 });
   },
 
   unpin: (c, out) => {
-    tone(c, out, { freq: 280, to: 180, dur: 0.09, peak: 0.028 });
+    tone(c, out, { freq: 340, to: 210, dur: 0.1, peak: 0.08 });
   },
 
   /** Filing the report: a stamp with weight behind it. */
   submit: (c, out) => {
-    burst(c, out, { dur: 0.05, freq: 700, type: "lowpass", peak: 0.085 });
-    tone(c, out, { freq: 90, to: 62, dur: 0.45, peak: 0.12, attack: 0.002 });
-    tone(c, out, { freq: 300, type: "triangle", dur: 0.18, peak: 0.028, delay: 0.03 });
+    burst(c, out, { dur: 0.055, freq: 900, type: "lowpass", peak: 0.16 });
+    tone(c, out, { freq: 90, to: 62, dur: 0.45, peak: 0.16, attack: 0.002 });
+    tone(c, out, { freq: 210, to: 140, dur: 0.3, peak: 0.11, attack: 0.002 });
+    tone(c, out, { freq: 420, type: "triangle", dur: 0.18, peak: 0.09, delay: 0.03 });
   },
 
   "verdict-good": (c, out) => {
-    tone(c, out, { freq: 392, type: "triangle", dur: 0.5, peak: 0.055, attack: 0.02 });
+    tone(c, out, { freq: 392, type: "triangle", dur: 0.5, peak: 0.14, attack: 0.02 });
     tone(c, out, {
       freq: 587.33,
       type: "triangle",
       dur: 0.6,
-      peak: 0.045,
+      peak: 0.12,
       attack: 0.02,
       delay: 0.16,
     });
-    tone(c, out, { freq: 784, dur: 1.1, peak: 0.035, attack: 0.12, delay: 0.32 });
+    tone(c, out, { freq: 784, dur: 1.1, peak: 0.09, attack: 0.12, delay: 0.32 });
   },
 
   "verdict-bad": (c, out) => {
-    tone(c, out, { freq: 330, type: "triangle", dur: 0.5, peak: 0.05, attack: 0.02 });
+    tone(c, out, { freq: 330, type: "triangle", dur: 0.5, peak: 0.13, attack: 0.02 });
     tone(c, out, {
       freq: 247,
       type: "triangle",
       dur: 0.7,
-      peak: 0.045,
+      peak: 0.12,
       attack: 0.02,
       delay: 0.18,
     });
-    tone(c, out, { freq: 110, dur: 1.2, peak: 0.055, attack: 0.14, delay: 0.34 });
+    tone(c, out, { freq: 220, dur: 1.2, peak: 0.1, attack: 0.14, delay: 0.34 });
+    tone(c, out, { freq: 110, dur: 1.2, peak: 0.1, attack: 0.14, delay: 0.34 });
   },
 };
 
-async function loadAmbientBuffer(c: AudioContext): Promise<AudioBuffer | null> {
-  if (ambientBuffer) return ambientBuffer;
-
-  if (!ambientLoadPromise) {
-    ambientLoadPromise = (async () => {
-      try {
-        const res = await fetch(AMBIENT_SOURCE);
-        if (!res.ok) return null;
-        ambientBuffer = await c.decodeAudioData(await res.arrayBuffer());
-        return ambientBuffer;
-      } catch {
-        return null;
-      }
-    })();
+function ensureAmbientElement(): HTMLAudioElement {
+  if (!ambientEl) {
+    ambientEl = new Audio(AMBIENT_SOURCE);
+    ambientEl.loop = true;
+    ambientEl.preload = "auto";
   }
-
-  return ambientLoadPromise;
+  return ambientEl;
 }
 
-function playAmbientBuffer(
-  c: AudioContext,
-  out: AudioNode,
-  buffer: AudioBuffer,
-): () => void {
-  const src = c.createBufferSource();
-  src.buffer = buffer;
-  src.loop = true;
-
-  const g = c.createGain();
-  g.gain.value = 0.0001;
-  src.connect(g).connect(out);
-  g.gain.linearRampToValueAtTime(AMBIENT_PEAK_GAIN, c.currentTime + AMBIENT_FADE_IN_SEC);
-  src.start();
-
-  return () => {
-    const now = c.currentTime;
-    g.gain.cancelScheduledValues(now);
-    g.gain.linearRampToValueAtTime(0.0001, now + 0.4);
-    window.setTimeout(() => {
-      try {
-        src.stop();
-      } catch {
-        // Already stopped.
-      }
-    }, 500);
-  };
+function resumeContext(c: AudioContext): Promise<void> {
+  if (c.state === "running") return Promise.resolve();
+  return c.resume().then(() => undefined);
 }
 
-async function startFileAmbient(
-  c: AudioContext,
-  out: AudioNode,
-): Promise<(() => void) | null> {
-  const buffer = await loadAmbientBuffer(c);
-  if (!buffer) return null;
-  return playAmbientBuffer(c, out, buffer);
+/**
+ * Room tone is one long loop on a single element, so "start" means "make sure
+ * it is running" — every cue takes a cheap shot at this because the first
+ * attempt on a fresh load is usually refused by the autoplay policy.
+ */
+function maybeKickAmbient() {
+  if (ambientWanted && enabled) void beginAmbientPlayback();
+}
+
+async function beginAmbientPlayback() {
+  if (ambientStarting) return;
+
+  const c = getCtx();
+  if (!c || !master || !enabled || !ambientWanted) return;
+
+  const el = ensureAmbientElement();
+  if (ambientStop && !el.paused) return;
+
+  ambientStarting = true;
+  const gen = ambientGeneration;
+  try {
+    await resumeContext(c);
+    if (c.state !== "running" || gen !== ambientGeneration) return;
+    if (!enabled || !ambientWanted) return;
+
+    if (!ambientElSource) {
+      ambientElSource = c.createMediaElementSource(el);
+      ambientGain = c.createGain();
+      ambientElSource.connect(ambientGain).connect(master);
+    }
+
+    const gain = ambientGain!;
+    gain.gain.cancelScheduledValues(c.currentTime);
+    gain.gain.setValueAtTime(0.0001, c.currentTime);
+    gain.gain.linearRampToValueAtTime(AMBIENT_PEAK_GAIN, c.currentTime + AMBIENT_FADE_IN_SEC);
+
+    await el.play();
+    if (gen !== ambientGeneration || !enabled || !ambientWanted) {
+      el.pause();
+      el.currentTime = 0;
+      return;
+    }
+
+    ambientStop = () => {
+      const now = c.currentTime;
+      gain.gain.cancelScheduledValues(now);
+      gain.gain.linearRampToValueAtTime(0.0001, now + 0.4);
+      window.setTimeout(() => {
+        if (ambientWanted) return;
+        el.pause();
+        el.currentTime = 0;
+      }, 500);
+    };
+  } catch {
+    // Refused for now; the next gesture or cue tries again.
+  } finally {
+    ambientStarting = false;
+  }
 }
 
 export const audio = {
-  /** Fetch and decode the room tone so /play can start playback immediately. */
-  preloadAmbient(): Promise<AudioBuffer | null> {
+  /**
+   * Watch for the first gesture anywhere on the site without building an audio
+   * graph for visitors who never open a case.
+   */
+  prime() {
+    hookGesture();
+  },
+
+  /** True once the context is actually running and cues will be heard. */
+  ready(): boolean {
+    return Boolean(ctx && ctx.state === "running");
+  },
+
+  /**
+   * Resolves to whether playback is available now. A refused resume can leave
+   * the promise pending indefinitely, so give it a deadline and read the state.
+   */
+  async unlock(): Promise<boolean> {
     const c = getCtx();
-    if (!c) return Promise.resolve(null);
-    return loadAmbientBuffer(c);
+    if (!c) return false;
+
+    if (c.state !== "running") {
+      try {
+        await Promise.race([
+          resumeContext(c),
+          new Promise((resolve) => window.setTimeout(resolve, 300)),
+        ]);
+      } catch {
+        // Refused — the caller decides what to do about it.
+      }
+    }
+
+    const ok = c.state === "running";
+    if (ok) maybeKickAmbient();
+    return ok;
+  },
+
+  /** Warm the room-tone element while the player browses the catalog. */
+  preloadAmbient(): Promise<null> {
+    if (typeof window === "undefined") return Promise.resolve(null);
+    ensureAmbientElement().load();
+    return Promise.resolve(null);
   },
   setEnabled(on: boolean) {
     enabled = on;
@@ -354,7 +445,7 @@ export const audio = {
     const c = getCtx();
     if (!c || !master) return;
     master.gain.value = volume;
-    if (c.state === "suspended") void c.resume();
+    void resumeContext(c).then(maybeKickAmbient);
   },
 
   setVolume(value: number) {
@@ -374,8 +465,9 @@ export const audio = {
     const c = getCtx();
     if (!c || !master) return;
     if (c.state === "suspended") {
-      // No gesture yet — drop the cue rather than queue a delayed blast.
-      void c.resume();
+      // No gesture yet — drop the cue rather than queue a delayed blast, but
+      // take the chance to unlock the context and pick up room tone.
+      void resumeContext(c).then(maybeKickAmbient);
       return;
     }
 
@@ -383,6 +475,7 @@ export const audio = {
     recent.push(now);
     try {
       CUES[cue](c, master);
+      maybeKickAmbient();
     } catch {
       // Audio must never break the investigation.
     }
@@ -390,25 +483,18 @@ export const audio = {
 
   startAmbient() {
     if (!enabled) return;
-    const c = getCtx();
-    if (!c || !master) return;
-
-    const gen = ++ambientGeneration;
-    ambientStop?.();
-    ambientStop = null;
-
-    void startFileAmbient(c, master).then((stop) => {
-      if (gen !== ambientGeneration || !enabled) {
-        stop?.();
-        return;
-      }
-      ambientStop = stop;
-    });
+    ambientWanted = true;
+    void beginAmbientPlayback();
   },
 
   stopAmbient() {
+    ambientWanted = false;
     ambientGeneration += 1;
     ambientStop?.();
     ambientStop = null;
+    if (ambientEl) {
+      ambientEl.pause();
+      ambientEl.currentTime = 0;
+    }
   },
 };

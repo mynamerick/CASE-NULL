@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserAvatar, useAuth, useUser } from "@clerk/nextjs";
 import { AccountProfile } from "@/components/marketing/AccountProfile";
+import { MarketingEmailPreferences } from "@/components/marketing/MarketingEmailPreferences";
 import { hasPremiumAccess } from "@/lib/features";
 import { proseContainerClass } from "@/lib/layout";
 import { SITE } from "@/lib/site";
@@ -20,6 +21,11 @@ const NAV_ITEMS = [
     href: "/account/billing",
     label: "Billing",
     match: (path: string) => path.startsWith("/account/billing"),
+  },
+  {
+    href: "/account/notifications",
+    label: "Notifications",
+    match: (path: string) => path.startsWith("/account/notifications"),
   },
 ] as const;
 
@@ -104,8 +110,10 @@ function AgentSummary() {
 }
 
 export function AccountWorkspace() {
+  const pathname = usePathname();
   const { has, isLoaded } = useAuth();
   const isPremium = isLoaded && hasPremiumAccess(has);
+  const isNotifications = pathname.startsWith("/account/notifications");
 
   return (
     <div className="min-h-[100dvh] bg-void">
@@ -118,7 +126,7 @@ export function AccountWorkspace() {
             Account
           </h1>
           <p className="mt-4 max-w-[65ch] text-sm leading-relaxed text-ink-dim">
-            Profile, security, and billing for your investigations.
+            Profile, security, billing, and notifications for your investigations.
           </p>
         </div>
       </header>
@@ -129,9 +137,13 @@ export function AccountWorkspace() {
           <AccountNav className="mt-6 border-t border-line-soft pt-6" />
         </div>
 
-        <section className="account-clerk mt-8 min-w-0">
-          <AccountProfile />
-        </section>
+        {isNotifications ? (
+          <MarketingEmailPreferences />
+        ) : (
+          <section className="account-clerk mt-8 min-w-0">
+            <AccountProfile />
+          </section>
+        )}
 
         <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-line-soft pt-6 font-mono text-[11px] uppercase tracking-[0.12em]">
           <Link href="/cases" className="text-ink-dim transition-colors hover:text-ink">

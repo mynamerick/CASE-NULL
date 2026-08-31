@@ -11,6 +11,7 @@
     "verify:case": "tsx scripts/verify-case.ts",
     "build:solution": "tsx scripts/build-solution.ts",
     "e2e": "tsx scripts/e2e.ts",
+    "email:test": "tsx scripts/send-test-emails.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push"
   },
@@ -37,6 +38,7 @@
     "posthog-node": "^5.51.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "resend": "^6.25.0",
     "tailwind-merge": "^3.6.0",
     "zustand": "^5.0.15"
   },

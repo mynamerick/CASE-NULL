@@ -9,10 +9,12 @@ import { isComingSoonEnabled } from "@/lib/coming-soon";
 import { getSiteUrl } from "@/lib/site";
 import { OG_IMAGE_PATH, SITE_KEYWORDS, absoluteUrl } from "@/lib/seo";
 import { CookieConsent } from "@/components/marketing/CookieConsent";
+import { MarketingConsentSync } from "@/components/marketing/MarketingConsentSync";
 import { DevToolsMount } from "@/components/dev/DevToolsMount";
 import { NetworkStatus } from "@/components/marketing/NetworkStatus";
 import { SkipLink } from "@/components/marketing/SkipLink";
 import { MonitoringProvider } from "@/components/analytics/MonitoringProvider";
+import { AudioPrimer } from "@/game/audio/AudioPrimer";
 import "./globals.css";
 
 const plexSans = IBM_Plex_Sans({
@@ -100,8 +102,10 @@ export default function RootLayout({
     <html lang="en-GB" className={`${plexSans.variable} ${jetbrainsMono.variable} ${barlowCondensed.variable} ${GeistPixelGrid.variable}`}>
       <body className="antialiased">
         <SkipLink />
+        <AudioPrimer />
         <ClerkProvider ui={ui} appearance={clerkAppearance}>
           {children}
+          <MarketingConsentSync />
           <MonitoringProvider />
           <CookieConsent />
           <NetworkStatus />

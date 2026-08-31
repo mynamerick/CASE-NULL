@@ -17,7 +17,8 @@ function isStaticBypass(path: string) {
   return (
     path.startsWith("/_next") ||
     path === "/favicon.ico" ||
-    path.startsWith("/api/health")
+    path.startsWith("/api/health") ||
+    path.startsWith("/api/webhooks/")
   );
 }
 

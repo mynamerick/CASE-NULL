@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import { useGame } from "@/game/store";
+import { useOperator } from "@/game/useOperator";
 import { Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ Whose account does the physical evidence contradict?
  * session isn't one localStorage write per keystroke.
  */
 export function NotesApp() {
+  const operator = useOperator();
   const notes = useGame((s) => s.notes);
   const setNotes = useGame((s) => s.setNotes);
   const [draft, setDraft] = useState(notes);
@@ -68,7 +70,7 @@ export function NotesApp() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex shrink-0 items-center justify-between border-b border-line px-3 py-2">
-        <span className="label-xs">Investigator notes</span>
+        <span className="label-xs">{operator.badge} · notes</span>
         <span
           className={cn(
             "flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em]",

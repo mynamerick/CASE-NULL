@@ -56,6 +56,10 @@ export default function PrivacyPage() {
             another device. A local copy may also be kept in your browser.
           </li>
           <li>
+            <strong className="font-medium text-ink">Marketing preferences</strong> — if you
+            opt in, your choice and the time you gave it are stored on your account.
+          </li>
+          <li>
             <strong className="font-medium text-ink">Cookie preferences</strong> — your
             accept / reject / preference choice, stored in your browser.
           </li>
@@ -70,6 +74,22 @@ export default function PrivacyPage() {
           analytics runs only if you opt in via cookie preferences. Error reports
           needed to fix faults may still be sent to our monitoring provider without
           marketing cookies.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="Marketing email">
+        <p>
+          We only send promotional email — such as new case releases — if you opt in. The
+          checkbox on sign-up is unchecked by default. You can turn product updates on or off
+          anytime from Account settings.
+        </p>
+        <p>
+          Transactional email about your account (welcome, billing, security) is separate
+          and may still be sent when needed to run the service.
+        </p>
+        <p>
+          Marketing broadcasts include a way to opt out in the email itself, as required by
+          law. That link only affects promotional mail, not account or billing messages.
         </p>
       </LegalSection>
 
@@ -91,6 +111,7 @@ export default function PrivacyPage() {
         <p>We use these service providers to run {SITE.name}:</p>
         <ul className="list-disc space-y-2 pl-5">
           <li>Authentication and billing provider — sign-in, sessions, and subscriptions</li>
+          <li>Email provider — transactional mail and marketing contact lists for opted-in users</li>
           <li>Database provider — case progress storage</li>
           <li>Hosting provider — website and application hosting</li>
         </ul>
@@ -117,6 +138,7 @@ export default function PrivacyPage() {
       <LegalSection title="Your choices">
         <ul className="list-disc space-y-2 pl-5">
           <li>Update your email or password from Account settings</li>
+          <li>Turn product update email on or off from Account settings</li>
           <li>Delete your account from Account settings</li>
           <li>
             Change cookie preferences from the footer or the{" "}

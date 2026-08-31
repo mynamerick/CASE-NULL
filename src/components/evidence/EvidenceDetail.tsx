@@ -4,6 +4,8 @@ import { Paperclip, Trash2, CircleSlash, Clock } from "lucide-react";
 import type { EvidenceItem, DocumentBlock, MapPin } from "@/game/types";
 import { useGame } from "@/game/store";
 import { isSealed } from "@/game/unlocks";
+import { applyOperator } from "@/game/operator";
+import { useOperator } from "@/game/useOperator";
 import { LockedItemGate } from "./LockedItemGate";
 import { AddToBoardButton } from "./AddToBoardButton";
 import { PhotoScene } from "@/components/photo/PhotoScene";
@@ -227,14 +229,7 @@ function Block({ block: b }: { block: DocumentBlock }) {
         </pre>
       );
     case "note":
-      return (
-        <div className="rounded-[3px] border-l-2 border-amber-dim bg-amber/[0.04] py-2.5 pl-3 pr-3">
-          {b.author && <p className="label-xs mb-1.5">{b.author}</p>}
-          <p className="whitespace-pre-line text-[13px] leading-[1.7] text-ink-dim">
-            {b.text}
-          </p>
-        </div>
-      );
+      return <NoteBlock block={b} />;
     case "kv":
       return (
         <dl className="divide-y divide-line-soft rounded-[3px] border border-line">
@@ -304,6 +299,20 @@ function Block({ block: b }: { block: DocumentBlock }) {
         </div>
       );
   }
+}
+
+/** Notes the player wrote earlier in the investigation are signed by them. */
+function NoteBlock({ block: b }: { block: Extract<DocumentBlock, { type: "note" }> }) {
+  const operator = useOperator();
+
+  return (
+    <div className="rounded-[3px] border-l-2 border-amber-dim bg-amber/[0.04] py-2.5 pl-3 pr-3">
+      {b.author && <p className="label-xs mb-1.5">{applyOperator(b.author, operator.name)}</p>}
+      <p className="whitespace-pre-line text-[13px] leading-[1.7] text-ink-dim">
+        {applyOperator(b.text, operator.name)}
+      </p>
+    </div>
+  );
 }
 
 function SchematicMap({ pins, caption }: { pins: MapPin[]; caption: string }) {
