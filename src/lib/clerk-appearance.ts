@@ -23,17 +23,23 @@ const sharedVariables = {
   fontFamilyButtons: "var(--font-mono-stack), ui-monospace, monospace",
 };
 
+const forensicPrimaryButton =
+  "h-11 w-full rounded-[4px] border border-[#9f3838]/70 bg-gradient-to-b from-[#b84545] to-[#8f3030] font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#07090d] shadow-[0_0_0_1px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.2),0_6px_20px_rgba(0,0,0,0.42)] hover:border-[#9f3838] hover:from-[#c04a4a] hover:to-[#9f3838] hover:-translate-y-px active:scale-[0.98] transition-all";
+
 const sharedElements = {
   userButtonPopoverCard: "border border-[#262d3b] bg-[#10141c]",
   userButtonPopoverActionButton: "text-[#a5adbd] hover:text-[#e7e9ee]",
   userButtonPopoverActionButtonText: "text-[#a5adbd]",
   userButtonPopoverFooter: "hidden",
-  pricingTable: "mx-auto",
-  pricingTableCard: "border border-[#262d3b] bg-[#10141c]",
-  pricingTableCardTitle: "text-[#e7e9ee]",
+  pricingTable: "mx-auto w-full",
+  pricingTableCard:
+    "overflow-hidden rounded-[6px] border border-[#262d3b] bg-[#10141c] shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]",
+  pricingTableCardTitle: "font-semibold text-[#e7e9ee]",
   pricingTableCardDescription: "text-[#a5adbd]",
-  pricingTableCardFee: "text-[#e7e9ee]",
+  pricingTableCardFee: "font-semibold text-[#e7e9ee]",
   pricingTableCardFeature: "text-[#a5adbd]",
+  pricingTableCardFooterButton: forensicPrimaryButton,
+  pricingTableCardFooter: "pt-2",
 };
 
 const authFormElements = {
@@ -73,7 +79,7 @@ const authFormElements = {
     "h-11 border border-[#262d3b] bg-[#0a0d13] text-[#e7e9ee] placeholder:text-[#6f7889] focus:border-[#9f3838]/50 shadow-none focus-within:outline-none focus-within:ring-1 focus-within:ring-[#9f3838]/35",
   formFieldInputShowPasswordButton: "text-[#a5adbd] hover:text-[#e7e9ee]",
   formButtonPrimary:
-    "mt-2 h-11 w-full bg-[#9f3838]/90 hover:bg-[#9f3838] text-[#e7e9ee] font-mono text-[11px] font-semibold uppercase tracking-[0.14em] shadow-none active:scale-[0.98] transition-colors",
+    "mt-2 h-11 w-full rounded-[4px] border border-[#9f3838]/70 bg-gradient-to-b from-[#b84545] to-[#8f3030] font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#07090d] shadow-[0_0_0_1px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.2)] hover:border-[#9f3838] hover:from-[#c04a4a] hover:to-[#9f3838] active:scale-[0.98] transition-all",
   formFieldErrorText: "text-[#b8452f] text-sm",
   formFieldSuccessText: "text-[#4d8a72] text-sm",
 
@@ -112,7 +118,7 @@ export const clerkAppearance = {
     formFieldInput:
       "border border-[#262d3b] bg-[#0a0d13] text-[#e7e9ee] placeholder:text-[#6f7889] focus:border-[#9f3838]/50",
     formButtonPrimary:
-      "bg-[#9f3838]/90 hover:bg-[#9f3838] text-[#e7e9ee] font-semibold uppercase tracking-wide text-[11px] shadow-none",
+      "rounded-[4px] border border-[#9f3838]/70 bg-gradient-to-b from-[#b84545] to-[#8f3030] font-semibold uppercase tracking-[0.14em] text-[11px] text-[#07090d] shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] hover:border-[#9f3838] hover:from-[#c04a4a] hover:to-[#9f3838]",
     footerActionLink: "text-[#9f3838] hover:text-[#e7e9ee]",
   },
 };
@@ -132,9 +138,10 @@ export const clerkAccountAppearance = {
     ...sharedElements,
     rootBox: "w-full",
     cardBox: "bg-transparent shadow-none p-0 m-0 w-full",
-    card: "bg-transparent shadow-none border-0 p-0 m-0 w-full gap-0",
+    card: "h-auto max-h-none overflow-visible bg-transparent shadow-none border-0 p-0 m-0 w-full gap-0",
+    scrollBox: "h-auto overflow-visible border-0 bg-transparent",
     main: "gap-0 p-0 w-full",
-    pageScrollBox: "p-0 w-full",
+    pageScrollBox: "p-0 w-full max-h-none overflow-visible",
     page: "w-full gap-0",
     navbar: hidden,
     navbarButtons: hidden,

@@ -417,4 +417,90 @@ select {
     svg {
     color: inherit !important;
   }
+
+  /*
+   * Embedded UserProfile portals billing drawers into its scroll box with
+   * position:absolute. Keep the card from clipping, promote the drawer to
+   * cover the viewport (including over the marketing nav), and dim the site.
+   */
+  .account-clerk .cl-card {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .account-clerk .cl-scrollBox {
+    overflow: visible !important;
+  }
+
+  .account-clerk:has(.cl-drawerBackdrop) {
+    position: relative;
+    z-index: 200;
+  }
+
+  body:has(.account-clerk .cl-drawerBackdrop) header {
+    z-index: 0 !important;
+  }
+
+  .account-clerk .cl-drawerBackdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 200;
+    background-color: rgb(0 0 0 / 0.55) !important;
+  }
+
+  .account-clerk .cl-drawerRoot {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 201;
+    pointer-events: none !important;
+  }
+
+  .account-clerk .cl-drawerContent {
+    position: fixed !important;
+    inset-block: 0.75rem !important;
+    inset-inline-end: 0.75rem !important;
+    inset-inline-start: auto !important;
+    max-width: calc(100% - 1.5rem) !important;
+    z-index: 202;
+    pointer-events: auto !important;
+    border-radius: 0.5rem !important;
+  }
+
+  /* Marketing pricing — match MarketingCta primary when Clerk element keys miss. */
+  .marketing-pricing .cl-button:not([data-variant="ghost"]):not([data-variant="link"]) {
+    min-height: 2.75rem !important;
+    border-radius: 4px !important;
+    border: 1px solid rgb(159 56 56 / 0.7) !important;
+    background: linear-gradient(180deg, #b84545 0%, #8f3030 100%) !important;
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.55),
+      inset 0 1px 0 rgb(255 255 255 / 0.2),
+      0 6px 20px rgb(0 0 0 / 0.42) !important;
+    font-family: var(--font-mono-stack), ui-monospace, monospace !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.14em !important;
+    text-transform: uppercase !important;
+    color: #07090d !important;
+    transition:
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.2s,
+      background 0.2s,
+      box-shadow 0.2s !important;
+  }
+
+  .marketing-pricing .cl-button:not([data-variant="ghost"]):not([data-variant="link"]):hover {
+    border-color: #9f3838 !important;
+    background: linear-gradient(180deg, #c04a4a 0%, #9f3838 100%) !important;
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.55),
+      inset 0 1px 0 rgb(255 255 255 / 0.26),
+      0 10px 28px rgb(0 0 0 / 0.5) !important;
+  }
+
+  .marketing-pricing .cl-button:not([data-variant="ghost"]):not([data-variant="link"]):active {
+    transform: translateY(0) scale(0.98);
+  }
 }

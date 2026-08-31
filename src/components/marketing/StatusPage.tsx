@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { BrandLogo } from "@/components/marketing/BrandLogo";
-import { cn } from "@/lib/utils";
+import { MarketingCta } from "@/components/marketing/MarketingCta";
 
 interface StatusAction {
   href?: string;
@@ -34,23 +33,28 @@ export function StatusPage({ code, title, body, actions = [] }: StatusPageProps)
         {actions.length > 0 ? (
           <div className="mt-8 flex flex-wrap gap-3">
             {actions.map((action) => {
-              const className = cn(
-                "inline-flex h-10 items-center justify-center rounded-[4px] px-5 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors active:scale-[0.98]",
-                action.primary
-                  ? "border border-amber/60 bg-amber/90 font-semibold text-void hover:bg-amber"
-                  : "border border-line text-ink-dim hover:border-ink-ghost hover:text-ink",
-              );
               if (action.href) {
                 return (
-                  <Link key={action.label} href={action.href} className={className}>
+                  <MarketingCta
+                    key={action.label}
+                    href={action.href}
+                    variant={action.primary ? "primary" : "secondary"}
+                    showArrow={action.primary}
+                  >
                     {action.label}
-                  </Link>
+                  </MarketingCta>
                 );
               }
               return (
-                <button key={action.label} type="button" onClick={action.onClick} className={className}>
+                <MarketingCta
+                  key={action.label}
+                  type="button"
+                  onClick={action.onClick}
+                  variant={action.primary ? "primary" : "secondary"}
+                  showArrow={action.primary}
+                >
                   {action.label}
-                </button>
+                </MarketingCta>
               );
             })}
           </div>

@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { MarketingHero } from "@/components/marketing/MarketingHero";
 import { HowItWorksSection } from "@/components/marketing/HowItWorksSection";
+import { MarketingCta } from "@/components/marketing/MarketingCta";
+import { MarketingCtaBand } from "@/components/marketing/MarketingCtaBand";
 import { MarketingSectionTitle } from "@/components/marketing/MarketingRevealText";
 import { PricingSection } from "@/components/marketing/PricingSection";
 import { CaseCatalogCard } from "@/components/marketing/CaseCatalogCard";
@@ -69,12 +70,9 @@ export default async function HomePage() {
                 once you have an account.
               </p>
             </div>
-            <Link
-              href="/cases"
-              className="inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-[4px] border border-line px-5 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-dim transition-colors hover:border-ink-ghost hover:text-ink active:scale-[0.98]"
-            >
+        <MarketingCta href="/cases" variant="secondary" size="md" showArrow={false}>
               View catalog
-            </Link>
+            </MarketingCta>
           </div>
 
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
@@ -93,27 +91,12 @@ export default async function HomePage() {
 
       <PricingSection />
 
-      <section className="border-t border-line-soft bg-shell py-16 md:py-20">
-        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 md:flex-row md:items-center md:justify-between md:px-6">
-          <div className="max-w-lg">
-            <MarketingSectionTitle
-              className="text-2xl font-semibold tracking-tight text-ink md:text-3xl"
-              delay={40}
-            >
-              Ready to open a case?
-            </MarketingSectionTitle>
-            <p className="mt-3 text-sm leading-relaxed text-ink-dim">
-              Create a free account, pick from the catalog, and start investigating.
-            </p>
-          </div>
-          <Link
-            href={isSignedIn ? "/cases" : "/signup"}
-            className="inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-[4px] border border-amber/60 bg-amber/90 px-6 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-void transition-colors hover:bg-amber active:scale-[0.98]"
-          >
-            {isSignedIn ? "Open catalog" : "Sign up"}
-          </Link>
-        </div>
-      </section>
+      <MarketingCtaBand
+        title="Ready to open a case?"
+        description="Create a free account, pick from the catalog, and start investigating."
+        href={isSignedIn ? "/cases" : "/signup"}
+        label={isSignedIn ? "Open catalog" : "Sign up"}
+      />
     </>
   );
 }

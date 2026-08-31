@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { MarketingCta } from "@/components/marketing/MarketingCta";
 import { PixelReveal } from "@/components/ui/PixelReveal";
 import {
   type CaseCatalogEntry,
@@ -138,21 +138,19 @@ export function CaseCatalogCard({
       <div className="border-t border-line-soft bg-panel px-6 py-4 md:px-7">
         <p className="text-[12px] text-ink-ghost">{action.hint}</p>
         {disabled ? (
-          <span className="mt-3 inline-flex h-9 cursor-not-allowed items-center justify-center rounded-[4px] border border-line bg-raised px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-ghost">
+          <MarketingCta as="span" variant="secondary" size="sm" showArrow={false} className="mt-3 cursor-not-allowed opacity-60">
             {action.label}
-          </span>
+          </MarketingCta>
         ) : (
-          <Link
+          <MarketingCta
             href={action.href ?? "/signup"}
-            className={cn(
-              "mt-3 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-[4px] px-4 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors active:scale-[0.98]",
-              state === "play"
-                ? "border border-amber/60 bg-amber/90 font-semibold text-void hover:bg-amber"
-                : "border border-line text-ink-dim hover:border-ink-ghost hover:text-ink",
-            )}
+            variant={state === "play" ? "primary" : "secondary"}
+            size="sm"
+            showArrow={state === "play"}
+            className="mt-3"
           >
             {action.label}
-          </Link>
+          </MarketingCta>
         )}
       </div>
     </article>

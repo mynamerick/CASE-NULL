@@ -4,13 +4,12 @@
 
 import Image from "next/image";
 
-import Link from "next/link";
-
 import { Show } from "@clerk/nextjs";
 
 import { motion, useReducedMotion } from "framer-motion";
 
 import { ForensicCarve } from "@/components/marketing/ForensicCarve";
+import { MarketingCta } from "@/components/marketing/MarketingCta";
 
 import { enter } from "@/lib/motion";
 
@@ -21,20 +20,6 @@ import { PixelReveal } from "@/components/ui/PixelReveal";
 /** Delay before supporting copy enters, timed to follow headline block reveal. */
 
 const FOLLOW_MS = 640;
-
-
-
-const primaryCtaClass =
-
-  "inline-flex h-11 items-center justify-center whitespace-nowrap rounded-[4px] border border-amber/60 bg-amber/90 px-6 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-void transition-colors hover:bg-amber active:scale-[0.98]";
-
-
-
-const secondaryCtaClass =
-
-  "inline-flex h-11 items-center justify-center whitespace-nowrap rounded-[4px] border border-line px-6 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-dim transition-colors hover:border-ink-ghost hover:text-ink active:scale-[0.98]";
-
-
 
 export function MarketingHero() {
 
@@ -185,33 +170,33 @@ export function MarketingHero() {
 
               <Show when="signed-out">
 
-                <Link href="/signup" className={primaryCtaClass}>
+                <MarketingCta href="/signup" size="lg">
 
                   Investigate a case
 
-                </Link>
+                </MarketingCta>
 
-                <Link href="/#how-it-works" className={secondaryCtaClass}>
+                <MarketingCta href="/#how-it-works" variant="secondary" size="lg" showArrow={false}>
 
                   How it works
 
-                </Link>
+                </MarketingCta>
 
               </Show>
 
               <Show when="signed-in">
 
-                <Link href="/cases" className={primaryCtaClass}>
+                <MarketingCta href="/cases" size="lg">
 
                   Investigate a case
 
-                </Link>
+                </MarketingCta>
 
-                <Link href="/#how-it-works" className={secondaryCtaClass}>
+                <MarketingCta href="/#how-it-works" variant="secondary" size="lg" showArrow={false}>
 
                   How it works
 
-                </Link>
+                </MarketingCta>
 
               </Show>
 

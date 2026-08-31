@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { MarketingCta } from "@/components/marketing/MarketingCta";
 import { BRAND } from "@/lib/brand";
 
 const BOOT_LINES: { text: string; delay: number; tone?: "warn" | "ok" | "muted" }[] = [
@@ -218,14 +219,13 @@ export function ComingSoonScreen({
                       </p>
                     ) : null}
 
-                    <button
+                    <MarketingCta
                       type="submit"
                       disabled={busy || !password.trim()}
                       data-testid="coming-soon-submit"
-                      className="inline-flex h-10 items-center justify-center rounded-[4px] border border-amber/60 bg-amber/90 px-5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-void transition-colors hover:bg-amber active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {busy ? "Verifying..." : "Authenticate"}
-                    </button>
+                    </MarketingCta>
                   </form>
                   ) : (
                     <p className="mt-8 font-mono text-[11px] text-amber">

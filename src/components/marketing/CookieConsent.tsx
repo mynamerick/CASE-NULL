@@ -3,6 +3,7 @@
 import { useEffect, useId, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MarketingCta } from "@/components/marketing/MarketingCta";
 import { CONSENT_EVENT, CONSENT_OPEN_EVENT, readConsent, writeConsent } from "@/lib/consent";
 import { useIsClient } from "@/lib/useIsClient";
 
@@ -76,30 +77,23 @@ export function CookieConsent() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button
+              <MarketingCta
                 type="button"
+                variant="secondary"
+                showArrow={false}
                 onClick={() => {
                   setAnalytics(false);
                   setPrefsOpen(true);
                 }}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] border border-line px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-dim transition-colors hover:border-ink-ghost hover:text-ink"
               >
                 Preferences
-              </button>
-              <button
-                type="button"
-                onClick={() => save(false)}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] border border-line px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-dim transition-colors hover:border-ink-ghost hover:text-ink"
-              >
+              </MarketingCta>
+              <MarketingCta type="button" variant="secondary" showArrow={false} onClick={() => save(false)}>
                 Reject non-essential
-              </button>
-              <button
-                type="button"
-                onClick={() => save(true)}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] border border-amber/60 bg-amber/90 px-4 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-void transition-colors hover:bg-amber"
-              >
+              </MarketingCta>
+              <MarketingCta type="button" onClick={() => save(true)}>
                 Accept cookies
-              </button>
+              </MarketingCta>
             </div>
           </div>
         </div>
@@ -155,20 +149,12 @@ export function CookieConsent() {
             </fieldset>
 
             <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setPrefsOpen(false)}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] border border-line px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-dim hover:text-ink"
-              >
+              <MarketingCta type="button" variant="secondary" showArrow={false} onClick={() => setPrefsOpen(false)}>
                 Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => save(analytics)}
-                className="inline-flex h-10 items-center justify-center rounded-[4px] border border-amber/60 bg-amber/90 px-4 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-void hover:bg-amber"
-              >
+              </MarketingCta>
+              <MarketingCta type="button" onClick={() => save(analytics)}>
                 Save preferences
-              </button>
+              </MarketingCta>
             </div>
           </div>
         </div>

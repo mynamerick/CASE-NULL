@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { CaseCatalogCard } from "@/components/marketing/CaseCatalogCard";
+import { MarketingCta } from "@/components/marketing/MarketingCta";
 import { MarketingPageTitle } from "@/components/marketing/MarketingRevealText";
 import { AmbientPreload } from "@/game/audio/AmbientPreload";
 import { getCaseCatalog } from "@/lib/catalog";
@@ -100,12 +100,9 @@ export default async function CasesPage() {
               : "Want the full library? Upgrade to Premium for every case plus extra features to help you solve the case."}
           </p>
           {!isPremium ? (
-            <Link
-              href="/#pricing"
-              className="mt-4 inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-[4px] border border-amber/40 px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-amber transition-colors hover:border-amber/70 hover:text-ink md:mt-0"
-            >
+            <MarketingCta href="/#pricing" variant="accent" size="sm" showArrow={false} className="mt-4 shrink-0 md:mt-0">
               View pricing
-            </Link>
+            </MarketingCta>
           ) : null}
         </div>
       </div>
