@@ -12,6 +12,26 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const { userId } = await auth.protect();
   const optedIn = await readMarketingConsent(userId);
+  const user = await currentUser();
+  const email = user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses[0]?.emailAddress;
+
+  if (email) {
+    try {
+      await syncMarketingContact({
+        email,
+        userId,
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        optedIn,
+      });
+    } catch (error) {
+      logError("marketing.preferences_sync_failed", {
+        userId,
+        message: error instanceof Error ? error.message : "unknown",
+      });
+    }
+  }
+
   return NextResponse.json({ optedIn });
 }
 

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 type Status = "loading" | "ready" | "saving" | "error";
 
 export function MarketingEmailPreferences() {
-  const [optedIn, setOptedIn] = useState(false);
+  const [optedIn, setOptedIn] = useState(true);
   const [status, setStatus] = useState<Status>("loading");
 
   useEffect(() => {
@@ -62,8 +62,9 @@ export function MarketingEmailPreferences() {
           </p>
           <h2 className="mt-2 text-base font-medium text-ink">Product updates</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-dim">
-            New case releases and occasional news about {`CASE NULL`}. Account emails such as
-            sign-in and billing are always sent regardless of this setting.
+            New case releases and occasional news about {`CASE NULL`}. You are subscribed when
+            you create an account; turn this off anytime. Account emails such as sign-in and
+            billing are always sent regardless of this setting.
           </p>
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
             See our{" "}

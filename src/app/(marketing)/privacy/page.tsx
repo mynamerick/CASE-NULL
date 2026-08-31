@@ -56,8 +56,8 @@ export default function PrivacyPage() {
             another device. A local copy may also be kept in your browser.
           </li>
           <li>
-            <strong className="font-medium text-ink">Marketing preferences</strong> — if you
-            opt in, your choice and the time you gave it are stored on your account.
+            <strong className="font-medium text-ink">Marketing preferences</strong> — whether
+            you receive product updates, and when you last changed that setting.
           </li>
           <li>
             <strong className="font-medium text-ink">Cookie preferences</strong> — your
@@ -79,9 +79,9 @@ export default function PrivacyPage() {
 
       <LegalSection title="Marketing email">
         <p>
-          We only send promotional email — such as new case releases — if you opt in. The
-          checkbox on sign-up is unchecked by default. You can turn product updates on or off
-          anytime from Account settings.
+          When you create an account, you are subscribed to occasional promotional email
+          about new cases and product news. You can turn product updates off anytime from
+          Account settings.
         </p>
         <p>
           Transactional email about your account (welcome, billing, security) is separate
@@ -111,7 +111,7 @@ export default function PrivacyPage() {
         <p>We use these service providers to run {SITE.name}:</p>
         <ul className="list-disc space-y-2 pl-5">
           <li>Authentication and billing provider — sign-in, sessions, and subscriptions</li>
-          <li>Email provider — transactional mail and marketing contact lists for opted-in users</li>
+          <li>Email provider — transactional mail and marketing contact lists</li>
           <li>Database provider — case progress storage</li>
           <li>Hosting provider — website and application hosting</li>
         </ul>

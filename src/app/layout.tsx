@@ -9,7 +9,6 @@ import { isComingSoonEnabled } from "@/lib/coming-soon";
 import { getSiteUrl } from "@/lib/site";
 import { OG_IMAGE_PATH, SITE_KEYWORDS, absoluteUrl } from "@/lib/seo";
 import { CookieConsent } from "@/components/marketing/CookieConsent";
-import { MarketingConsentSync } from "@/components/marketing/MarketingConsentSync";
 import { DevToolsMount } from "@/components/dev/DevToolsMount";
 import { NetworkStatus } from "@/components/marketing/NetworkStatus";
 import { SkipLink } from "@/components/marketing/SkipLink";
@@ -105,7 +104,6 @@ export default function RootLayout({
         <AudioPrimer />
         <ClerkProvider ui={ui} appearance={clerkAppearance}>
           {children}
-          <MarketingConsentSync />
           <MonitoringProvider />
           <CookieConsent />
           <NetworkStatus />

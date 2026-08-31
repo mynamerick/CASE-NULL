@@ -1,6 +1,7 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import {
   MARKETING_CONSENT_METADATA_KEY,
+  isMarketingOptedIn,
   type MarketingConsentRecord,
   type MarketingConsentSource,
   parseMarketingConsentRecord,
@@ -10,7 +11,7 @@ export async function readMarketingConsent(userId: string): Promise<boolean> {
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
   const record = parseMarketingConsentRecord(user.privateMetadata?.[MARKETING_CONSENT_METADATA_KEY]);
-  return record?.optedIn === true;
+  return isMarketingOptedIn(record);
 }
 
 export async function writeMarketingConsent(
@@ -32,12 +33,4 @@ export async function writeMarketingConsent(
   });
 
   return record;
-}
-
-export function marketingConsentFromWebhook(privateMetadata: unknown): boolean {
-  if (!privateMetadata || typeof privateMetadata !== "object") return false;
-  const record = parseMarketingConsentRecord(
-    (privateMetadata as Record<string, unknown>)[MARKETING_CONSENT_METADATA_KEY],
-  );
-  return record?.optedIn === true;
 }

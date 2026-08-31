@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { CLERK_PLANS } from "@/lib/billing";
 import { isPremiumPlanSlug, payerEmail, primaryClerkEmail } from "@/lib/email/clerk-webhook";
 import { syncMarketingContact, removeMarketingContact, updateMarketingContactProfile } from "@/lib/email/marketing";
-import { marketingConsentFromWebhook } from "@/lib/marketing-consent-server";
+import { writeMarketingConsent } from "@/lib/marketing-consent-server";
 import {
   sendFreeTrialEndingEmail,
   sendPaymentFailedEmail,
@@ -61,6 +61,8 @@ export async function POST(req: NextRequest) {
           break;
         }
 
+        await writeMarketingConsent(event.data.id, true, "signup");
+
         await Promise.all([
           sendWelcomeEmail({
             to: email,
@@ -72,7 +74,7 @@ export async function POST(req: NextRequest) {
             userId: event.data.id,
             firstName: event.data.first_name,
             lastName: event.data.last_name,
-            optedIn: marketingConsentFromWebhook(event.data.private_metadata),
+            optedIn: true,
           }),
         ]);
         break;
