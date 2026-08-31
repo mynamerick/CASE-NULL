@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { activeCase } from "@/cases/the-last-message";
+import { useActiveCase } from "@/game/useActiveCase";
 import { parseCaseTime } from "@/lib/time";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -13,6 +13,7 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
  * the case file. It ticks in real seconds from the case's start time.
  */
 export function SystemClock({ className }: { className?: string }) {
+  const activeCase = useActiveCase();
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export function SystemClock({ className }: { className?: string }) {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [activeCase.investigationDate]);
 
   // Render nothing until mounted so server and client markup agree.
   if (!now) return <span className={className} suppressHydrationWarning />;

@@ -8,10 +8,11 @@ import { LockedItemGate } from "./LockedItemGate";
 import { AddToBoardButton } from "./AddToBoardButton";
 import { PhotoScene } from "@/components/photo/PhotoScene";
 import { Badge } from "@/components/ui/badge";
-import { peopleById } from "@/cases/the-last-message";
+import { usePeopleById } from "@/game/useActiveCase";
 import { fullStamp, machineStamp, formatDuration, dayHeading, dayKey } from "@/lib/time";
 import { withGroupBreaks } from "@/lib/grouping";
 import { cn } from "@/lib/utils";
+import { PixelReveal } from "@/components/ui/PixelReveal";
 
 /**
  * Renders one evidence item. Everything here is display: nothing in this file
@@ -58,9 +59,9 @@ function Body({ item }: { item: EvidenceItem }) {
 function EmailView({ content: c }: { content: Extract<EvidenceItem["content"], { kind: "email" }> }) {
   return (
     <article>
-      <h2 className="text-lg font-semibold leading-snug tracking-tight text-ink">
+      <PixelReveal as="h2" className="text-lg font-semibold leading-snug tracking-tight text-ink">
         {c.subject}
-      </h2>
+      </PixelReveal>
 
       <dl className="mt-4 space-y-1.5 border-y border-line py-3 font-mono text-[11.5px]">
         <Row k="From" v={`${c.from.name} <${c.from.address}>`} />
@@ -107,6 +108,7 @@ function ConversationView({
 }: {
   content: Extract<EvidenceItem["content"], { kind: "conversation" }>;
 }) {
+  const peopleById = usePeopleById();
   const person = peopleById[c.personId];
   const rows = withGroupBreaks(c.lines, (l) => dayKey(l.at));
 
@@ -207,9 +209,14 @@ function Block({ block: b }: { block: DocumentBlock }) {
   switch (b.type) {
     case "heading":
       return (
-        <h3 className="border-b border-line-soft pb-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-amber">
+        <PixelReveal
+          as="h3"
+          className="border-b border-line-soft pb-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-amber"
+          duration={480}
+          blockSize={6}
+        >
           {b.text}
-        </h3>
+        </PixelReveal>
       );
     case "para":
       return <p className="text-[13.5px] leading-[1.7] text-ink-dim">{b.text}</p>;
@@ -531,6 +538,7 @@ function CallLogView({
 /* ---------------------------------------------------------------- footer -- */
 
 function Footer({ item }: { item: EvidenceItem }) {
+  const peopleById = usePeopleById();
   return (
     <footer className="mt-8 border-t border-line pt-4">
       <div className="flex flex-wrap items-center gap-2">

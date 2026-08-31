@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { PixelReveal } from "@/components/ui/PixelReveal";
 import { cn } from "@/lib/utils";
 
 export interface ConfirmDialogProps {
@@ -68,9 +69,15 @@ export function ConfirmDialog({
       >
         <div className="border-b border-line px-4 py-3">
           <p className="label-xs">Workstation</p>
-          <h2 id={titleId} className="mt-1 font-mono text-[13px] font-medium text-ink">
+          <PixelReveal
+            as="h2"
+            id={titleId}
+            className="mt-1 font-mono text-[13px] font-medium text-ink"
+            trigger="immediate"
+            duration={480}
+          >
             {title}
-          </h2>
+          </PixelReveal>
         </div>
 
         <p id={descId} className="px-4 py-4 text-[13px] leading-relaxed text-ink-dim">

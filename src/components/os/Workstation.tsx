@@ -6,6 +6,7 @@ import { useGame } from "@/game/store";
 import { AudioBridge } from "@/game/audio/AudioBridge";
 import { BootScreen } from "./BootScreen";
 import { Desktop } from "./Desktop";
+import { HowToPlayDialog } from "./HowToPlayDialog";
 import { ProgressSync } from "./ProgressSync";
 
 /**
@@ -30,6 +31,7 @@ export function Workstation({ caseId }: { caseId: string }) {
       {loadStatus === "ready" ? (
         <>
           <Desktop />
+          <HowToPlayDialog caseId={caseId} ready={!bootPending} />
           <AnimatePresence>
             {bootPending && <BootScreen key="boot" onDone={markBooted} />}
           </AnimatePresence>

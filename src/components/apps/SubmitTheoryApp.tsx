@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Gavel, AlertTriangle, Check, X, RotateCcw } from "lucide-react";
-import { activeCase } from "@/cases/the-last-message";
+import { useActiveCase } from "@/game/useActiveCase";
 import { useGame, allVisible } from "@/game/store";
 import { audio } from "@/game/audio/engine";
 import type { Debrief, Rank, ScoreResult } from "@/game/solution";
@@ -25,6 +25,7 @@ export function SubmitTheoryApp() {
 /* ------------------------------------------------------------------ form -- */
 
 function TheoryForm() {
+  const activeCase = useActiveCase();
   const discovered = useGame((s) => s.discovered);
   const pins = useGame((s) => s.pins);
   const submitTheory = useGame((s) => s.submitTheory);

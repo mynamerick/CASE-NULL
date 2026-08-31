@@ -1,6 +1,7 @@
-import { Workstation } from "@/components/os/Workstation";
+import { redirect } from "next/navigation";
 import { DEFAULT_CASE_ID } from "@/game/registry";
 
-export default function PlayPage() {
-  return <Workstation caseId={DEFAULT_CASE_ID} />;
+/** Legacy `/play` URL — always routes to the default case slug. */
+export default function PlayIndexPage() {
+  redirect(`/play/${DEFAULT_CASE_ID}`);
 }

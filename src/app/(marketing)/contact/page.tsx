@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { proseContainerClass } from "@/lib/layout";
 import { SITE } from "@/lib/site";
+import { buildPageMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Contact",
   description: `Contact ${SITE.name} support for account, billing, or site questions.`,
-};
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (

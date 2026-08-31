@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { AuthShell } from "@/components/marketing/AuthShell";
 import { SignupForm } from "@/components/marketing/SignupForm";
 import { BRAND } from "@/lib/brand";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Create account",
   description: `Create a free ${BRAND.name} account. Three investigations included.`,
-  robots: { index: false, follow: false },
-};
+  path: "/signup",
+  index: false,
+});
 
 export default function SignupPage() {
   return (

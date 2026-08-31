@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useGame, allVisible } from "@/game/store";
 import { unreviewedInApp } from "@/game/progress";
-import { activeCase } from "@/cases/the-last-message";
+import { useActiveCase } from "@/game/useActiveCase";
 import type { AppId } from "@/game/types";
 import { APPS } from "./apps";
 import { AppIcon } from "./AppIcon";
@@ -18,6 +18,7 @@ import { useIsMobile } from "./useIsMobile";
 import { renderApp } from "@/components/apps/renderApp";
 
 export function Desktop() {
+  const activeCase = useActiveCase();
   const isMobile = useIsMobile();
   const windows = useGame((s) => s.windows);
   const openApp = useGame((s) => s.openApp);

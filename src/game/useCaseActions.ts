@@ -49,6 +49,7 @@ export function useCaseActions() {
     if (!caseId || pending) return;
     setPending("abandon");
     try {
+      useGame.getState().pauseTimer();
       await saveRemoteProgress(caseId, progressSnapshot(), "abandoned");
     } catch {
       // Leaving is navigation, not a save. A failed flag must not trap the player.

@@ -3,11 +3,13 @@ import Link from "next/link";
 import { LegalPage, LegalSection } from "@/components/marketing/LegalPage";
 import { CookieSettingsButton } from "@/components/marketing/CookieSettingsButton";
 import { SITE } from "@/lib/site";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Cookie policy",
   description: `How ${SITE.name} uses essential cookies for sign-in and optional analytics cookies.`,
-};
+  path: "/cookies",
+});
 
 export default function CookiesPage() {
   return (

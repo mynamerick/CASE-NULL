@@ -26,6 +26,10 @@ export interface CloudProgressState {
     evidenceIds: string[];
     submittedAt: number;
   } | null;
+  /** Optional investigation timer — accumulated ms when paused. */
+  timerMs?: number;
+  /** True once the player has taken a timed action in this case. */
+  timerStarted?: boolean;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -93,5 +97,10 @@ export function parseProgressState(raw: unknown): CloudProgressState | null {
     notes: typeof raw.notes === "string" ? raw.notes.slice(0, 50_000) : "",
     appOpenCounts,
     submission: submission && submission.suspectId ? submission : null,
+    timerMs:
+      typeof raw.timerMs === "number" && Number.isFinite(raw.timerMs)
+        ? Math.max(0, Math.floor(raw.timerMs))
+        : 0,
+    timerStarted: raw.timerStarted === true,
   };
 }

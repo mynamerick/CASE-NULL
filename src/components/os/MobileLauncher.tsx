@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useGame, allVisible } from "@/game/store";
 import { computeProgress } from "@/game/progress";
-import { activeCase } from "@/cases/the-last-message";
+import { useActiveCase } from "@/game/useActiveCase";
 import type { AppId } from "@/game/types";
 import { APPS } from "./apps";
 import { AppIcon } from "./AppIcon";
@@ -16,6 +16,7 @@ export function MobileLauncher({
 }: {
   unreviewed: (id: AppId) => number;
 }) {
+  const activeCase = useActiveCase();
   const openApp = useGame((s) => s.openApp);
   const discovered = useGame((s) => s.discovered);
   const progress = computeProgress(allVisible(discovered), discovered);

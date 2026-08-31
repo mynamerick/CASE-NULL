@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShieldAlert } from "lucide-react";
-import { activeCase } from "@/cases/the-last-message";
+import { useActiveCase } from "@/game/useActiveCase";
 import { audio } from "@/game/audio/engine";
+import { PixelReveal } from "@/components/ui/PixelReveal";
 
 const LINES: { text: string; delay: number }[] = [
   { text: "HOLLOWAY FORENSIC REVIEW WORKSTATION — TERMINAL 04", delay: 90 },
@@ -30,6 +31,7 @@ const LINES: { text: string; delay: number }[] = [
 ];
 
 export function BootScreen({ onDone }: { onDone: () => void }) {
+  const activeCase = useActiveCase();
   const [shown, setShown] = useState(0);
   const [phase, setPhase] = useState<"boot" | "loaded">("boot");
   const skipped = useRef(false);
@@ -108,12 +110,25 @@ export function BootScreen({ onDone }: { onDone: () => void }) {
               className="px-6 text-center"
             >
               <ShieldAlert className="mx-auto h-6 w-6 text-amber" />
-              <p className="mt-4 font-mono text-[11px] tracking-[0.34em] text-amber">
+              <PixelReveal
+                as="p"
+                className="mt-4 font-mono text-[11px] tracking-[0.34em] text-amber"
+                trigger="immediate"
+                order="ltr"
+                duration={420}
+                blockColor="#07090d"
+              >
                 CASE FILE LOADED
-              </p>
-              <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink md:text-3xl">
+              </PixelReveal>
+              <PixelReveal
+                as="h1"
+                className="mt-4 text-2xl font-semibold tracking-tight text-ink md:text-3xl"
+                trigger="immediate"
+                delay={120}
+                blockColor="#07090d"
+              >
                 {activeCase.title}
-              </h1>
+              </PixelReveal>
               <p className="mt-2 font-mono text-[11px] tracking-[0.2em] text-ink-faint">
                 {activeCase.codename}
               </p>

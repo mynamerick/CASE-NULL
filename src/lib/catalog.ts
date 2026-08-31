@@ -1,8 +1,11 @@
 import { cases } from "@/game/registry";
 import type { Case } from "@/game/types";
 
+import type { ProgressStatus } from "@/lib/progress-state";
+
 export type CatalogAccess = "free" | "premium";
 export type CatalogStatus = "live" | "coming_soon";
+export type CaseProgressFlag = ProgressStatus | null;
 
 export interface CaseCatalogEntry {
   id: string;
@@ -103,6 +106,53 @@ export function resolveCasePickerState(
   if (entry.access === "premium" && !isPremium) return "premium_locked";
   if (!isSignedIn) return "sign_in_required";
   return "play";
+}
+
+export const PROGRESS_BADGE: Record<
+  ProgressStatus,
+  { label: string; className: string }
+> = {
+  in_progress: {
+    label: "In progress",
+    className: "border-cool/30 bg-cool/10 text-cool",
+  },
+  completed: {
+    label: "Completed",
+    className: "border-verified/30 bg-verified/10 text-verified",
+  },
+  abandoned: {
+    label: "Abandoned",
+    className: "border-line bg-panel text-ink-ghost",
+  },
+};
+
+/** Play-state CTA copy when the catalog card can launch the workstation. */
+export function resolvePlayAction(progress: CaseProgressFlag): {
+  label: string;
+  hint: string;
+} {
+  if (progress === "completed") {
+    return {
+      label: "Review case",
+      hint: "Reopen your submitted report and evidence.",
+    };
+  }
+  if (progress === "in_progress") {
+    return {
+      label: "Resume case",
+      hint: "Pick up where you left off.",
+    };
+  }
+  if (progress === "abandoned") {
+    return {
+      label: "Resume case",
+      hint: "This investigation was marked abandoned.",
+    };
+  }
+  return {
+    label: "Open case",
+    hint: "Launch the forensic workstation.",
+  };
 }
 
 export const PRICING = {

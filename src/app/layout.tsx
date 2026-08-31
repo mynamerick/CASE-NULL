@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ui } from "@clerk/ui";
-import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Sans, JetBrains_Mono, Barlow_Condensed } from "next/font/google";
+import { GeistPixelGrid } from "geist/font/pixel";
 import { BRAND } from "@/lib/brand";
 import { clerkAppearance } from "@/lib/clerk-appearance";
+import { isComingSoonEnabled } from "@/lib/coming-soon";
 import { getSiteUrl } from "@/lib/site";
+import { OG_IMAGE_PATH, SITE_KEYWORDS, absoluteUrl } from "@/lib/seo";
 import { CookieConsent } from "@/components/marketing/CookieConsent";
 import { DevToolsMount } from "@/components/dev/DevToolsMount";
 import { NetworkStatus } from "@/components/marketing/NetworkStatus";
@@ -26,6 +29,13 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const barlowCondensed = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["700", "800"],
+  variable: "--font-display-stack",
+  display: "swap",
+});
+
 const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
@@ -35,19 +45,23 @@ export const metadata: Metadata = {
     template: `%s — ${BRAND.name}`,
   },
   description: BRAND.description,
+  keywords: [...SITE_KEYWORDS],
   applicationName: BRAND.name,
   authors: [{ name: BRAND.name }],
-  alternates: { canonical: "/" },
+  alternates: { canonical: absoluteUrl("/") },
+  robots: isComingSoonEnabled()
+    ? { index: false, follow: false }
+    : { index: true, follow: true },
   openGraph: {
     type: "website",
     locale: "en_GB",
-    url: siteUrl,
+    url: absoluteUrl("/"),
     siteName: BRAND.name,
     title: BRAND.title,
     description: BRAND.description,
     images: [
       {
-        url: "/marketing/og-image.png",
+        url: OG_IMAGE_PATH,
         width: 1200,
         height: 630,
         alt: `${BRAND.name} — browser mystery cases`,
@@ -58,7 +72,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: BRAND.title,
     description: BRAND.description,
-    images: ["/marketing/og-image.png"],
+    images: [OG_IMAGE_PATH],
   },
   icons: {
     icon: [
@@ -83,7 +97,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-GB" className={`${plexSans.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en-GB" className={`${plexSans.variable} ${jetbrainsMono.variable} ${barlowCondensed.variable} ${GeistPixelGrid.variable}`}>
       <body className="antialiased">
         <SkipLink />
         <ClerkProvider ui={ui} appearance={clerkAppearance}>

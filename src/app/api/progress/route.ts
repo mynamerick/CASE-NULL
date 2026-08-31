@@ -26,6 +26,35 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
+  const listAll = searchParams.get("all") === "1";
+
+  if (listAll) {
+    try {
+      const rows = await db
+        .select({
+          caseId: caseProgress.caseId,
+          status: caseProgress.status,
+          updatedAt: caseProgress.updatedAt,
+        })
+        .from(caseProgress)
+        .where(eq(caseProgress.userId, userId));
+
+      return NextResponse.json({
+        progress: rows.map((row) => ({
+          caseId: row.caseId,
+          status: row.status,
+          updatedAt: row.updatedAt,
+        })),
+      });
+    } catch (error) {
+      logError("progress_list_failed", {
+        userId,
+        error: error instanceof Error ? error.message : "unknown",
+      });
+      return unavailable();
+    }
+  }
+
   const caseId = searchParams.get("caseId") ?? DEFAULT_CASE_ID;
   if (!isKnownCaseId(caseId)) {
     return NextResponse.json({ error: "Unknown case" }, { status: 400 });

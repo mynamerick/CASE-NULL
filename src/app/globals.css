@@ -47,6 +47,8 @@
     "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-mono-stack), ui-monospace, "SF Mono", "Cascadia Mono",
     Menlo, Consolas, monospace;
+  --font-display: var(--font-display-stack), var(--font-sans);
+  --font-pixel-grid: var(--font-geist-pixel-grid);
 
   --radius-window: 6px;
 }

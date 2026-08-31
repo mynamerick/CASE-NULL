@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { BrandLogo } from "@/components/marketing/BrandLogo";
+import { AuthHeading } from "@/components/marketing/AuthHeading";
+import { enter } from "@/lib/motion";
 
 export interface AuthDossierRow {
   label: string;
@@ -44,9 +46,9 @@ export function AuthPanelVisual({
 
       <div className="relative flex min-h-[100dvh] flex-col px-10 py-12 xl:px-14 xl:py-16">
         <motion.div
-          initial={reduce ? false : { opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={enter(reduce, 0.5)}
         >
           <Link href="/" className="inline-flex">
             <BrandLogo variant="full" linked={false} />
@@ -55,25 +57,23 @@ export function AuthPanelVisual({
 
         <div className="flex flex-1 flex-col justify-end pb-10 pt-16">
           <motion.div
-            initial={reduce ? false : { opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+            transition={enter(reduce, 0.55, 0.06)}
             className="max-w-md space-y-6"
           >
-            <div className="space-y-3">
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-amber">
-                {eyebrow}
-              </p>
-              <h1 className="text-3xl font-semibold tracking-tight text-ink xl:text-[2rem] xl:leading-tight">
-                {title}
-              </h1>
-              <p className="max-w-[32ch] text-sm leading-relaxed text-ink-dim">{tagline}</p>
-            </div>
+            <AuthHeading
+              eyebrow={eyebrow}
+              title={title}
+              tagline={tagline}
+              variant="hero"
+              titleClassName="text-3xl font-semibold tracking-tight text-ink xl:text-[2rem] xl:leading-tight"
+            />
 
             <motion.dl
-              initial={reduce ? false : { opacity: 0 }}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.55, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+              transition={enter(reduce, 0.55, 0.14)}
               className="border-l border-line/60 pl-5"
             >
               {dossier.map((row) => (
@@ -89,9 +89,9 @@ export function AuthPanelVisual({
         </div>
 
         <motion.p
-          initial={reduce ? false : { opacity: 0 }}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={enter(reduce, 0.5, 0.2)}
           className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-ghost"
         >
           Fictional scenarios only

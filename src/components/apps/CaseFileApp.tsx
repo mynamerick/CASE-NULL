@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { AlertTriangle, Target, Users, ListTree, User } from "lucide-react";
-import { activeCase, peopleById } from "@/cases/the-last-message";
+import { useActiveCase, usePeopleById } from "@/game/useActiveCase";
 import { useGame, allVisible } from "@/game/store";
 import { computeProgress } from "@/game/progress";
 import { Badge } from "@/components/ui/badge";
 import { fullStamp, daysBetween } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { PixelReveal } from "@/components/ui/PixelReveal";
 
 type Tab = "overview" | "people" | "timeline" | "objectives";
 
@@ -19,6 +20,8 @@ const TABS: { id: Tab; label: string; icon: typeof User }[] = [
 ];
 
 export function CaseFileApp() {
+  const activeCase = useActiveCase();
+  const peopleById = usePeopleById();
   const [tab, setTab] = useState<Tab>("overview");
   const discovered = useGame((s) => s.discovered);
   const progress = computeProgress(allVisible(discovered), discovered);
@@ -39,9 +42,13 @@ export function CaseFileApp() {
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-semibold tracking-tight text-ink">
+              <PixelReveal
+                as="h2"
+                className="text-lg font-semibold tracking-tight text-ink"
+                trigger="immediate"
+              >
                 {activeCase.title}
-              </h2>
+              </PixelReveal>
               <Badge variant="amber">{activeCase.codename}</Badge>
               <Badge variant="signal">High risk</Badge>
             </div>
@@ -90,6 +97,8 @@ export function CaseFileApp() {
 /* -------------------------------------------------------------- overview -- */
 
 function Overview() {
+  const activeCase = useActiveCase();
+  const peopleById = usePeopleById();
   const v = activeCase.victim;
   const victim = peopleById[v.personId];
 
@@ -152,6 +161,7 @@ const ACCENT: Record<string, string> = {
 };
 
 function People() {
+  const activeCase = useActiveCase();
   const listed = activeCase.people.filter(
     (p) => p.id !== activeCase.victim.personId,
   );
@@ -220,6 +230,7 @@ const CONFIDENCE: Record<string, { label: string; cls: string; dot: string }> = 
 };
 
 function Timeline() {
+  const activeCase = useActiveCase();
   return (
     <div className="mx-auto max-w-2xl">
       <p className="mb-4 text-[12.5px] leading-relaxed text-ink-faint">
@@ -284,6 +295,7 @@ function Timeline() {
 /* ------------------------------------------------------------ objectives -- */
 
 function Objectives() {
+  const activeCase = useActiveCase();
   return (
     <div className="mx-auto max-w-2xl">
       <p className="mb-4 text-[12.5px] leading-relaxed text-ink-faint">

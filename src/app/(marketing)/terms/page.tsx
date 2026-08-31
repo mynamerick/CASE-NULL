@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, LegalSection } from "@/components/marketing/LegalPage";
 import { SITE } from "@/lib/site";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Terms of service",
   description: `Terms for using ${SITE.name}, including accounts, fictional content, and subscriptions.`,
-};
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

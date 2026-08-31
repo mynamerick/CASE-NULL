@@ -53,6 +53,7 @@ export function ProgressSync({ caseId }: { caseId: string }) {
 
     const persist = async (immediate = false) => {
       if (syncing.current && !immediate) return;
+      useGame.getState().pauseTimer();
       const state = progressSnapshot();
       const encoded = JSON.stringify(state);
       if (encoded === lastSaved.current) return;
@@ -75,7 +76,7 @@ export function ProgressSync({ caseId }: { caseId: string }) {
           reportClientError({
             message: "Cloud save failed repeatedly",
             source: "progress-sync",
-            route: "/play",
+            route: `/play/${caseId}`,
           });
           useGame.getState().pushToast({
             title: "Progress not saved",
@@ -89,7 +90,7 @@ export function ProgressSync({ caseId }: { caseId: string }) {
           reportClientError({
             message: error instanceof Error ? error.message : "Cloud save exception",
             source: "progress-sync",
-            route: "/play",
+            route: `/play/${caseId}`,
             stack: error instanceof Error ? error.stack : undefined,
           });
         }
@@ -107,7 +108,9 @@ export function ProgressSync({ caseId }: { caseId: string }) {
         state.pins === prev.pins &&
         state.notes === prev.notes &&
         state.appOpenCounts === prev.appOpenCounts &&
-        state.submission === prev.submission
+        state.submission === prev.submission &&
+        state.timerMs === prev.timerMs &&
+        state.timerStarted === prev.timerStarted
       ) {
         return;
       }

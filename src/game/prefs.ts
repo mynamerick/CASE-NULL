@@ -12,10 +12,13 @@ interface PrefsState {
   soundEnabled: boolean;
   effectsEnabled: boolean;
   volume: number;
+  timerEnabled: boolean;
   toggleSound: () => void;
   setSoundEnabled: (on: boolean) => void;
   toggleEffects: () => void;
   setVolume: (value: number) => void;
+  toggleTimer: () => void;
+  setTimerEnabled: (on: boolean) => void;
 }
 
 export const usePrefs = create<PrefsState>()(
@@ -24,12 +27,15 @@ export const usePrefs = create<PrefsState>()(
       soundEnabled: true,
       effectsEnabled: true,
       volume: 0.7,
+      timerEnabled: false,
 
       toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
       setSoundEnabled: (on) => set({ soundEnabled: on }),
       toggleEffects: () => set((s) => ({ effectsEnabled: !s.effectsEnabled })),
       setVolume: (value) =>
         set({ volume: Math.min(1, Math.max(0, value)) }),
+      toggleTimer: () => set((s) => ({ timerEnabled: !s.timerEnabled })),
+      setTimerEnabled: (on) => set({ timerEnabled: on }),
     }),
     {
       name: "casenull.prefs.v1",

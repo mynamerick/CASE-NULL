@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { AuthShell } from "@/components/marketing/AuthShell";
 import { LoginForm } from "@/components/marketing/LoginForm";
 import { BRAND } from "@/lib/brand";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Sign in",
   description: `Sign in to your ${BRAND.name} account and continue your investigation.`,
-  robots: { index: false, follow: false },
-};
+  path: "/login",
+  index: false,
+});
 
 export default function LoginPage() {
   return (

@@ -3,7 +3,7 @@
 import { useGame, visibleInApp } from "@/game/store";
 import type { EvidenceItem } from "@/game/types";
 import { SplitView } from "./SplitView";
-import { peopleById } from "@/cases/the-last-message";
+import { usePeopleById } from "@/game/useActiveCase";
 import { machineStamp, sortByTime } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +28,7 @@ export function MessagesApp() {
 }
 
 function ThreadRow({ item, opened }: { item: EvidenceItem; opened: boolean }) {
+  const peopleById = usePeopleById();
   if (item.content.kind !== "conversation") return null;
   const person = peopleById[item.content.personId];
   const deletedCount = item.content.lines.filter((l) => l.deleted).length;

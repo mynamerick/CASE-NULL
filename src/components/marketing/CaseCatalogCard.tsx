@@ -1,8 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { PixelReveal } from "@/components/ui/PixelReveal";
 import {
   type CaseCatalogEntry,
   type CasePickerState,
+  type CaseProgressFlag,
+  PROGRESS_BADGE,
   resolveCasePickerState,
+  resolvePlayAction,
 } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +19,6 @@ const STATE_COPY: Record<
   play: {
     label: "Open case",
     hint: "Launch the forensic workstation.",
-    href: "/play",
   },
   sign_in_required: {
     label: "Sign in to play",
@@ -36,16 +41,24 @@ interface CaseCatalogCardProps {
   entry: CaseCatalogEntry;
   isSignedIn?: boolean;
   isPremium?: boolean;
+  progressStatus?: CaseProgressFlag;
 }
 
 export function CaseCatalogCard({
   entry,
   isSignedIn = false,
   isPremium = false,
+  progressStatus = null,
 }: CaseCatalogCardProps) {
   const state = resolveCasePickerState(entry, isSignedIn, isPremium);
-  const action = STATE_COPY[state];
+  const playAction = resolvePlayAction(progressStatus);
+  const lockedAction = state !== "play" ? STATE_COPY[state] : null;
+  const playHref = `/play/${entry.id}` as const;
+  const action = lockedAction ?? { ...playAction, href: playHref };
   const isLive = entry.status === "live";
+  const progressBadge =
+    isLive && progressStatus ? PROGRESS_BADGE[progressStatus] : null;
+  const disabled = state === "coming_soon";
 
   return (
     <article
@@ -73,12 +86,29 @@ export function CaseCatalogCard({
               Coming soon
             </span>
           ) : null}
+          {progressBadge ? (
+            <span
+              aria-label={`Case status: ${progressBadge.label}`}
+              className={cn(
+                "rounded-[4px] border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em]",
+                progressBadge.className,
+              )}
+            >
+              {progressBadge.label}
+            </span>
+          ) : null}
         </div>
 
         <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-amber">
           {entry.codename}
         </p>
-        <h3 className="mt-2 text-xl font-semibold tracking-tight text-ink">{entry.title}</h3>
+        <PixelReveal
+          as="h3"
+          className="mt-2 text-xl font-semibold tracking-tight text-ink"
+          delay={80}
+        >
+          {entry.title}
+        </PixelReveal>
         <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-dim">{entry.summary}</p>
 
         {isLive ? (
@@ -107,7 +137,7 @@ export function CaseCatalogCard({
 
       <div className="border-t border-line-soft bg-panel px-6 py-4 md:px-7">
         <p className="text-[12px] text-ink-ghost">{action.hint}</p>
-        {action.disabled ? (
+        {disabled ? (
           <span className="mt-3 inline-flex h-9 cursor-not-allowed items-center justify-center rounded-[4px] border border-line bg-raised px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-ghost">
             {action.label}
           </span>

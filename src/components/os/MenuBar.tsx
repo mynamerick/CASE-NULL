@@ -8,19 +8,21 @@ import {
   LogOut,
 } from "lucide-react";
 import { useGame, allVisible } from "@/game/store";
+import { useActiveCase } from "@/game/useActiveCase";
 import { usePrefs } from "@/game/prefs";
 import { useCaseActions } from "@/game/useCaseActions";
 import { computeProgress } from "@/game/progress";
 import { SystemClock } from "./SystemClock";
+import { InvestigationTimer } from "./InvestigationTimer";
 import { ProgressIndicator } from "./ProgressIndicator";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { SoundControl } from "./SoundControl";
-import { activeCase } from "@/cases/the-last-message";
 import { cn } from "@/lib/utils";
 
 type CaseDialog = "leave" | "reset" | null;
 
 export function MenuBar() {
+  const activeCase = useActiveCase();
   const discovered = useGame((s) => s.discovered);
   const submission = useGame((s) => s.submission);
   const effectsEnabled = usePrefs((s) => s.effectsEnabled);
@@ -140,6 +142,8 @@ export function MenuBar() {
         </MenuButton>
 
         <span className="hidden h-3 w-px bg-line sm:block" />
+
+        <InvestigationTimer />
 
         <SystemClock className="hidden font-mono text-[11px] text-ink-dim sm:inline" />
       </div>

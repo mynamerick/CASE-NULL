@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/marketing/BrandLogo";
+import { AuthHeading } from "@/components/marketing/AuthHeading";
 import {
   AuthPanelVisual,
   type AuthDossierRow,
@@ -58,12 +59,8 @@ export function AuthShell({
             className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-12 xl:px-16"
           >
             <div className="w-full max-w-[24rem]">
-              <div className="mb-8 space-y-2 lg:hidden">
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-amber">
-                  {eyebrow}
-                </p>
-                <h1 className="text-2xl font-semibold tracking-tight text-ink">{title}</h1>
-                <p className="max-w-[32ch] text-sm leading-relaxed text-ink-dim">{tagline}</p>
+              <div className="mb-8 lg:hidden">
+                <AuthHeading eyebrow={eyebrow} title={title} tagline={tagline} />
               </div>
 
               {children}

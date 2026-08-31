@@ -3,7 +3,8 @@
 import { create } from "zustand";
 import type { AppId, EvidenceItem } from "./types";
 import { checkPassword, isSealed, isVisible, newlyVisible } from "./unlocks";
-import { activeCase } from "@/cases/the-last-message";
+import { getCase } from "@/game/registry";
+import { usePrefs } from "@/game/prefs";
 import type { CloudProgressState } from "@/lib/progress-state";
 
 export interface WindowState {
@@ -51,6 +52,8 @@ interface ProgressSlice {
   notes: string;
   appOpenCounts: Record<string, number>;
   submission: SubmittedTheory | null;
+  timerMs: number;
+  timerStarted: boolean;
 }
 
 /**
@@ -66,6 +69,8 @@ interface GameState extends ProgressSlice {
   loadAttempt: number;
   /** Session-only gate for the boot terminal — not saved to the cloud record. */
   bootPending: boolean;
+  /** Wall clock when the timer is actively counting; null while paused. */
+  timerRunningSince: number | null;
   windows: WindowState[];
   topZ: number;
   toasts: Toast[];
@@ -100,6 +105,9 @@ interface GameState extends ProgressSlice {
   submitTheory: (theory: Omit<SubmittedTheory, "submittedAt">) => void;
   clearSubmission: () => void;
 
+  touchTimer: () => void;
+  pauseTimer: () => void;
+
   resetCase: () => void;
 }
 
@@ -130,11 +138,14 @@ const initialProgress: ProgressSlice = {
   notes: "",
   appOpenCounts: {},
   submission: null,
+  timerMs: 0,
+  timerStarted: false,
 };
 
 /** Session-only state, cleared whenever a case is loaded or reset. */
 const initialSession = {
   bootPending: true,
+  timerRunningSince: null as number | null,
   windows: [] as WindowState[],
   topZ: 10,
   toasts: [] as Toast[],
@@ -142,6 +153,20 @@ const initialSession = {
 };
 
 let toastSeq = 0;
+
+function caseData(get: () => GameState) {
+  const id = get().caseId;
+  if (!id) throw new Error("No case loaded");
+  return getCase(id);
+}
+
+function touchTimerInternal(set: (fn: (s: GameState) => Partial<GameState>) => void) {
+  if (!usePrefs.getState().timerEnabled) return;
+  set((s) => {
+    if (s.timerRunningSince !== null) return {};
+    return { timerStarted: true, timerRunningSince: Date.now() };
+  });
+}
 
 export const useGame = create<GameState>()((set, get) => ({
   ...initialProgress,
@@ -154,6 +179,8 @@ export const useGame = create<GameState>()((set, get) => ({
     set({
       ...initialProgress,
       ...(state ?? {}),
+      timerMs: state?.timerMs ?? 0,
+      timerStarted: state?.timerStarted ?? false,
       ...initialSession,
       caseId,
       loadStatus: "ready",
@@ -166,7 +193,8 @@ export const useGame = create<GameState>()((set, get) => ({
 
   markBooted: () => set({ booted: true, bootPending: false }),
 
-  openApp: (appId) =>
+  openApp: (appId) => {
+    touchTimerInternal(set);
     set((s) => {
       const existing = s.windows.find((w) => w.appId === appId);
       const z = s.topZ + 1;
@@ -200,7 +228,8 @@ export const useGame = create<GameState>()((set, get) => ({
           },
         ],
       };
-    }),
+    });
+  },
 
   closeApp: (appId) =>
     set((s) => ({ windows: s.windows.filter((w) => w.appId !== appId) })),
@@ -246,12 +275,14 @@ export const useGame = create<GameState>()((set, get) => ({
   discover: (evidenceId) => {
     const s = get();
     if (s.discovered.includes(evidenceId)) return;
+    const activeCase = caseData(get);
     const item = activeCase.evidence.find((e) => e.id === evidenceId);
     if (item && isSealed(item, new Set(s.unlocked))) return;
     const before = new Set(s.discovered);
     const after = new Set([...s.discovered, evidenceId]);
     const revealed = newlyVisible(activeCase.evidence, before, after);
     set({ discovered: [...after] });
+    touchTimerInternal(set);
     if (revealed.length > 0) {
       const label =
         revealed.length === 1
@@ -268,7 +299,7 @@ export const useGame = create<GameState>()((set, get) => ({
   },
 
   attemptUnlock: (evidenceId, password) => {
-    const item = activeCase.evidence.find((e) => e.id === evidenceId);
+    const item = caseData(get).evidence.find((e) => e.id === evidenceId);
     if (!item) return false;
     if (!checkPassword(item, password)) return false;
     set((s) =>
@@ -280,7 +311,8 @@ export const useGame = create<GameState>()((set, get) => ({
     return true;
   },
 
-  pin: (evidenceId) =>
+  pin: (evidenceId) => {
+    touchTimerInternal(set);
     set((s) => {
       if (s.pins.some((p) => p.evidenceId === evidenceId)) return {};
       const n = s.pins.length;
@@ -296,7 +328,8 @@ export const useGame = create<GameState>()((set, get) => ({
           },
         ],
       };
-    }),
+    });
+  },
 
   unpin: (evidenceId) =>
     set((s) => ({ pins: s.pins.filter((p) => p.evidenceId !== evidenceId) })),
@@ -311,7 +344,10 @@ export const useGame = create<GameState>()((set, get) => ({
       pins: s.pins.map((p) => (p.evidenceId === evidenceId ? { ...p, x, y } : p)),
     })),
 
-  setNotes: (value) => set({ notes: value }),
+  setNotes: (value) => {
+    touchTimerInternal(set);
+    set({ notes: value });
+  },
   focusEvidence: (evidenceId) => set({ focusedEvidenceId: evidenceId }),
 
   pushToast: (toast) =>
@@ -328,10 +364,23 @@ export const useGame = create<GameState>()((set, get) => ({
   dismissToast: (id) =>
     set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
-  submitTheory: (theory) =>
-    set({ submission: { ...theory, submittedAt: Date.now() } }),
+  submitTheory: (theory) => {
+    touchTimerInternal(set);
+    set({ submission: { ...theory, submittedAt: Date.now() } });
+  },
 
   clearSubmission: () => set({ submission: null }),
+
+  touchTimer: () => touchTimerInternal(set),
+
+  pauseTimer: () =>
+    set((s) => {
+      if (s.timerRunningSince === null) return {};
+      return {
+        timerMs: s.timerMs + (Date.now() - s.timerRunningSince),
+        timerRunningSince: null,
+      };
+    }),
 
   resetCase: () => set({ ...initialProgress, ...initialSession }),
 }));
@@ -339,6 +388,8 @@ export const useGame = create<GameState>()((set, get) => ({
 /** The current progress, shaped for the cloud record. */
 export function progressSnapshot(): CloudProgressState {
   const s = useGame.getState();
+  const runningMs =
+    s.timerRunningSince !== null ? Date.now() - s.timerRunningSince : 0;
   return {
     booted: s.booted,
     discovered: s.discovered,
@@ -347,6 +398,8 @@ export function progressSnapshot(): CloudProgressState {
     notes: s.notes,
     appOpenCounts: s.appOpenCounts,
     submission: s.submission,
+    timerMs: s.timerMs + runningMs,
+    timerStarted: s.timerStarted,
   };
 }
 
@@ -357,13 +410,17 @@ export function visibleInApp(
   appId: AppId,
   discovered: readonly string[],
 ): EvidenceItem[] {
+  const caseId = useGame.getState().caseId;
+  if (!caseId) return [];
   const set = new Set(discovered);
-  return activeCase.evidence.filter(
+  return getCase(caseId).evidence.filter(
     (e) => e.sourceApp === appId && isVisible(e, set),
   );
 }
 
 export function allVisible(discovered: readonly string[]): EvidenceItem[] {
+  const caseId = useGame.getState().caseId;
+  if (!caseId) return [];
   const set = new Set(discovered);
-  return activeCase.evidence.filter((e) => isVisible(e, set));
+  return getCase(caseId).evidence.filter((e) => isVisible(e, set));
 }

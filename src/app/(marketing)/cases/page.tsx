@@ -2,34 +2,49 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { CaseCatalogCard } from "@/components/marketing/CaseCatalogCard";
+import { MarketingPageTitle } from "@/components/marketing/MarketingRevealText";
 import { AmbientPreload } from "@/game/audio/AmbientPreload";
 import { getCaseCatalog } from "@/lib/catalog";
 import { hasPremiumAccess } from "@/lib/features";
+import { getUserProgressMap } from "@/lib/progress-server";
 import { BRAND } from "@/lib/brand";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Case catalog",
   description: `Browse ${BRAND.name} investigations. Sign in to open a case from your free or premium library.`,
-  robots: { index: false, follow: false },
-};
+  path: "/cases",
+  index: false,
+});
 export default async function CasesPage() {
-  const { has } = await auth.protect();
+  const { userId, has } = await auth.protect();
   const isPremium = hasPremiumAccess(has);
   const catalog = getCaseCatalog();
-  const premiumCount = catalog.filter((entry) => entry.status === "live").length;
-  const freeCount = catalog.filter((entry) => entry.access === "free").length;
+  const progressMap = await getUserProgressMap(userId);
+  const liveCatalog = catalog.filter((entry) => entry.status === "live");
+  const premiumCount = liveCatalog.filter((entry) => entry.access === "premium").length;
+  const freeCount = liveCatalog.filter((entry) => entry.access === "free").length;
+  const activeCount = liveCatalog.filter(
+    (entry) => progressMap[entry.id] === "in_progress",
+  ).length;
+  const completedCount = liveCatalog.filter(
+    (entry) => progressMap[entry.id] === "completed",
+  ).length;
+  const abandonedCount = liveCatalog.filter(
+    (entry) => progressMap[entry.id] === "abandoned",
+  ).length;
 
   return (
     <div className="min-h-[100dvh] bg-void">
       <AmbientPreload />
       <div className="border-b border-line-soft bg-abyss">
         <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-16">
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-faint">
-            Case catalog
-          </p>
-          <h1 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-ink md:text-4xl">
-            Begin an investigation
-          </h1>
+          <MarketingPageTitle
+            eyebrow="Case catalog"
+            title="Begin an investigation"
+            eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-faint"
+            titleClassName="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-ink md:text-4xl"
+          />
           <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-dim">
             Ready to solve a case? Choose from library of cases, get started with {freeCount} free cases or upgrade to Premium for the full library.
           </p>
@@ -49,6 +64,18 @@ export default async function CasesPage() {
                 {isPremium ? "Premium" : "Free"}
               </dd>
             </div>
+            <div>
+              <dt className="text-ink-ghost">In progress</dt>
+              <dd className="mt-1 text-2xl tabular-nums text-ink">{activeCount}</dd>
+            </div>
+            <div>
+              <dt className="text-ink-ghost">Completed</dt>
+              <dd className="mt-1 text-2xl tabular-nums text-ink">{completedCount}</dd>
+            </div>
+            <div>
+              <dt className="text-ink-ghost">Abandoned</dt>
+              <dd className="mt-1 text-2xl tabular-nums text-ink">{abandonedCount}</dd>
+            </div>
           </dl>
         </div>
       </div>
@@ -61,6 +88,7 @@ export default async function CasesPage() {
               entry={entry}
               isSignedIn
               isPremium={isPremium}
+              progressStatus={progressMap[entry.id] ?? null}
             />
           ))}
         </div>
